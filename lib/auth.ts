@@ -64,6 +64,21 @@ export function handleApiError(error: unknown): NextResponse {
     if (error.message === 'FORBIDDEN') {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
+    if (
+      error.name === 'MongooseServerSelectionError' ||
+      error.name === 'MongoServerSelectionError' ||
+      error.message.includes('MongooseServerSelectionError') ||
+      error.message.includes('MongoServerSelectionError') ||
+      error.message.includes('Could not connect to any servers')
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Database connection failed. If you are using MongoDB Atlas, make sure your current IP address is whitelisted in your Atlas Network Access settings (or verify your MONGODB_URI in .env.local).'
+        },
+        { status: 500 }
+      );
+    }
   }
   return NextResponse.json({ success: false, message: 'Something went wrong' }, { status: 500 });
 }

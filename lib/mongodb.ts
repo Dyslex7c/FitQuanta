@@ -18,8 +18,17 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!global.mongooseConn.promise) {
     global.mongooseConn.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
+    }).catch((err) => {
+      global.mongooseConn.promise = null;
+      throw err;
     });
   }
-  global.mongooseConn.conn = await global.mongooseConn.promise;
+  try {
+    global.mongooseConn.conn = await global.mongooseConn.promise;
+  } catch (err) {
+    global.mongooseConn.promise = null;
+    throw err;
+  }
   return global.mongooseConn.conn;
 }
+
