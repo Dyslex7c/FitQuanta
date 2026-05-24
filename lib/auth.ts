@@ -62,17 +62,23 @@ export function handleApiError(error: unknown): NextResponse<any> {
     if (error.message === 'FORBIDDEN') {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
+    
+    const errMsg = error.message || '';
+    const errName = error.name || '';
     if (
-      error.name === 'MongooseServerSelectionError' ||
-      error.name === 'MongoServerSelectionError' ||
-      error.message.includes('MongooseServerSelectionError') ||
-      error.message.includes('MongoServerSelectionError') ||
-      error.message.includes('Could not connect to any servers')
+      errName.includes('Mongo') ||
+      errName.includes('Mongoose') ||
+      errMsg.includes('Mongo') ||
+      errMsg.includes('Mongoose') ||
+      errMsg.includes('querySrv') ||
+      errMsg.includes('ECONNREFUSED') ||
+      errMsg.includes('ENOTFOUND') ||
+      errMsg.includes('Could not connect')
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Database connection failed. If you are using MongoDB Atlas, make sure your current IP address is whitelisted in your Atlas Network Access settings (or verify your MONGODB_URI in .env.local).'
+          message: `Database connection failed (${errName}: ${errMsg}). Please verify your internet connection, make sure your IP is whitelisted in MongoDB Atlas, and check your MONGODB_URI in .env.local.`
         },
         { status: 500 }
       );

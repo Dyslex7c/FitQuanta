@@ -1,23 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import ProgressLog from '@/models/ProgressLog';
-import { verifyAuth, handleApiError } from '@/lib/auth';
+import { verifyAuth, sanitizeObject } from '@/lib/auth';
 import { progressLogSchema } from '@/schemas/progressLogSchema';
-import type { ApiResponse } from '@/types/api';
-import type { IProgressLog } from '@/types/progress';
 
-export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<IProgressLog>>> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const { userId } = verifyAuth(req, ['client']);
     const body = await req.json();
     const parsed = progressLogSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ success: false, message: 'Invalid log data' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Invalid log data', errors: parsed.error.flatten() },
+        { status: 400 }
+      );
     }
+    // Strip any $ keys just in case
+    const clean = sanitizeObject(parsed.data as Record<string, unknown>);
     await connectDB();
-    const log = await ProgressLog.create({ ...parsed.data, userId } as any);
-    return NextResponse.json({ success: true, data: (log as any).toObject() as unknown as IProgressLog }, { status: 201 });
+    const log = await ProgressLog.create({ ...clean, userId });
+    return NextResponse.json({ success: true, data: log.toObject() }, { status: 201 });
   } catch (error: unknown) {
-    return handleApiError(error);
+    console.error('[LOG ERROR]', error);
+    return NextResponse.json({ success: false, message: 'Something went wrong' }, { status: 500 });
   }
 }

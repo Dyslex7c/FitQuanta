@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Plan from '@/models/Plan';
-import { verifyAuth, handleApiError } from '@/lib/auth';
-import type { ApiResponse } from '@/types/api';
-import type { IPlan } from '@/types/plan';
+import { verifyAuth } from '@/lib/auth';
 
-export async function GET(req: NextRequest): Promise<NextResponse<ApiResponse<IPlan>>> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
-    const { userId } = verifyAuth(req, ['client', 'trainer', 'admin']);
+    const { userId } = verifyAuth(req, ['client']);
     await connectDB();
-    const plan = await Plan.findOne({ userId }).sort({ createdAt: -1 });
+    const plan = await Plan.findOne({ userId, type: 'ai_free' }).sort({ createdAt: -1 }).lean();
     if (!plan) {
-      return NextResponse.json({ success: false, message: 'No plan found' }, { status: 404 });
+      return NextResponse.json({ success: true, data: null });
     }
-    return NextResponse.json({ success: true, data: plan.toObject() as unknown as IPlan });
+    return NextResponse.json({ success: true, data: plan });
   } catch (error: unknown) {
-    return handleApiError(error);
+    console.error('[PLAN FETCH ERROR]', error);
+    return NextResponse.json({ success: false, message: 'Something went wrong' }, { status: 500 });
   }
 }

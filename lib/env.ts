@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  MONGODB_URI: z.string().url(),
+  MONGODB_URI: z.string(),
   JWT_SECRET: z.string().min(8, 'JWT_SECRET must be at least 8 characters long'),
   GROQ_API_KEY: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),

@@ -6,7 +6,7 @@ import BMICard from '@/components/BMICard';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import Link from 'next/link';
-import axios from 'axios';
+import api from '@/lib/axiosInstance';
 
 export default function DashboardPage() {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -15,10 +15,10 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (user) {
-      axios
-        .get('/api/plans')
+      api
+        .get('/plans')
         .then((res) => {
-          if (res.data.success) {
+          if (res.data.success && res.data.data) {
             setHasPlan(true);
           }
         })
@@ -48,6 +48,20 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <div className="min-h-[85vh] bg-[#0a0a0f] py-10 px-6 font-body text-[#e2e8f0]">
         <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Medical Gate Banner */}
+          {hasMedicalGate && (
+            <div className="border-l-4 border-orange-500 bg-orange-500/10 rounded-r-xl px-6 py-4 text-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-[0_0_15px_rgba(255,107,53,0.1)]">
+              <div>
+                <span className="font-bold text-orange-400">🏥 You have medical conditions on file. AI plan generation is disabled for your safety.</span>
+                <p className="text-xs text-[#94a3b8] mt-1">Work with a certified trainer for a safe, personalised programme.</p>
+              </div>
+              <Link href="/trainer" className="inline-block px-4 py-2 border border-orange-500 text-orange-500 hover:bg-orange-500/10 rounded-xl text-xs font-bold transition-all shadow-[0_0_10px_rgba(255,107,53,0.1)] text-center whitespace-nowrap">
+                Find a Trainer &rarr;
+              </Link>
+            </div>
+          )}
+
           {/* Welcome Screen */}
           <div className="flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-[#12121a] to-[#1a1a2e] p-8 rounded-2xl border border-[#1e1e2e] shadow-[0_0_20px_rgba(0,0,0,0.3)]">
             <div>
@@ -98,27 +112,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Warning Banner / Recommendation */}
-          {hasMedicalGate && (
-            <div className="bg-[#ff6b35]/15 border border-[#ff6b35] p-6 rounded-2xl shadow-[0_0_20px_rgba(255,107,53,0.15)] flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
-              <div className="flex items-start space-x-3">
-                <svg className="w-8 h-8 text-[#ff6b35] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <div>
-                  <h4 className="font-display font-extrabold text-[#ff6b35] text-lg mb-1">AI Plan Generation Disabled</h4>
-                  <p className="text-sm text-[#e2e8f0] leading-relaxed">
-                    Due to your reported medical conditions or injuries, we cannot safely generate an AI plan. 
-                    We highly recommend hiring a certified personal trainer to design a secure, customized program for you.
-                  </p>
-                </div>
-              </div>
-              <button className="px-5 py-3 border border-[#ff6b35] text-[#ff6b35] hover:bg-[#ff6b35]/10 rounded-xl font-bold text-sm transition-all shadow-[0_0_10px_rgba(255,107,53,0.1)]">
-                Browse Trainers
-              </button>
-            </div>
-          )}
 
           {/* Quick Actions / CTA Panel */}
           <div>

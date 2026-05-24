@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Inter } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
+import QueryProvider from "@/components/QueryProvider";
 import Navbar from "@/components/Navbar";
 
 const orbitron = Orbitron({
@@ -28,8 +29,10 @@ export default function RootLayout({
     <html lang="en" className={`${orbitron.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#0a0a0f] text-[#e2e8f0] font-body">
         <ReduxProvider>
-          <Navbar />
-          <main className="flex-grow flex flex-col">{children}</main>
+          <QueryProvider>
+            <Navbar />
+            <main className="flex-grow flex flex-col">{children}</main>
+          </QueryProvider>
         </ReduxProvider>
       </body>
     </html>
