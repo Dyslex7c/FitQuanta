@@ -116,7 +116,7 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              <Link href="/progress" className="card-hover group">
+              <Link href="/progress?tab=log" className="card-hover group">
                 <div className="flex items-center justify-between mb-3">
                   <span className="card-title font-display text-sm font-bold tracking-wider uppercase text-orange">Log Progress</span>
                   <span className="text-orange group-hover:translate-x-1 transition-transform duration-150">→</span>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
                 <p className="text-text-muted text-sm">Log workouts, nutrition macros, sleep hours, daily steps, and body weight.</p>
               </Link>
 
-              <Link href="/progress" className="card-hover group">
+              <Link href="/progress?tab=analytics" className="card-hover group">
                 <div className="flex items-center justify-between mb-3">
                   <span className="card-title font-display text-sm font-bold tracking-wider uppercase text-cyan">View Analytics</span>
                   <span className="text-cyan group-hover:translate-x-1 transition-transform duration-150">→</span>

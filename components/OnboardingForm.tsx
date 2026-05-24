@@ -30,6 +30,13 @@ export default function OnboardingForm() {
   } = useForm<any>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      gender: 'male',
+      activityLevel: 'sedentary',
+      fitnessLevel: 'beginner',
+      fitnessGoal: 'fat_loss',
+      equipment: 'none',
+      dietPreference: 'veg',
+      budget: 'low',
       foodAllergies: [],
       medicalConditions: [],
       injuries: [],
@@ -37,6 +44,7 @@ export default function OnboardingForm() {
   });
 
   const nextStep = async () => {
+    if (step >= 4) return; // Don't go beyond step 4
     let fieldsToValidate: Array<keyof OnboardingInput> = [];
     if (step === 1) {
       fieldsToValidate = ['age', 'gender', 'height', 'weight', 'country'];
@@ -48,8 +56,17 @@ export default function OnboardingForm() {
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
-      setStep((prev) => prev + 1);
+      setStep((prev) => Math.min(prev + 1, 4));
     }
+  };
+
+  // Guard: block form submission on steps 1-3 (e.g. when user presses Enter in a text input)
+  const guardedSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    if (step < 4) {
+      e.preventDefault();
+      return;
+    }
+    handleSubmit(onSubmit)(e);
   };
 
   const prevStep = () => {
@@ -118,7 +135,16 @@ export default function OnboardingForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={guardedSubmit}
+        onKeyDown={(e) => {
+          // Block Enter key from submitting the form on steps 1-3
+          if (e.key === 'Enter' && step < 4) {
+            e.preventDefault();
+          }
+        }}
+        className="space-y-6"
+      >
         {/* Step 1: Basic info */}
         {step === 1 && (
           <div className="space-y-4">
@@ -336,8 +362,9 @@ export default function OnboardingForm() {
             </button>
           ) : (
             <button
-              type="submit"
+              type="button"
               disabled={loading}
+              onClick={() => handleSubmit(onSubmit)()}
               className="btn-primary bg-orange hover:bg-orange-dim text-bg text-sm py-2.5 px-6"
             >
               {loading ? 'Submitting...' : 'Finish Setup'}
