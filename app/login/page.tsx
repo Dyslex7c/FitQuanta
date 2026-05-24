@@ -9,11 +9,12 @@ import { setCredentials } from '@/redux/slices/authSlice';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import Toast from '@/components/Toast';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const {
@@ -26,7 +27,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     setLoading(true);
-    setErrorMsg(null);
+    setToast(null);
     try {
       const res = await axios.post('/api/auth/login', data);
       if (res.data.success) {
@@ -40,66 +41,85 @@ export default function LoginPage() {
         }
       }
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setToast({
+        message: err.response?.data?.message || 'Login failed. Please check your credentials.',
+        type: 'error'
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-[#0a0a0f] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-[#12121a] p-8 rounded-2xl border border-[#1e1e2e] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-display font-extrabold text-[#e2e8f0]">
-            Sign in to FitQuanta
-          </h2>
-          <p className="mt-2 text-center text-sm text-[#94a3b8]">
-            Or{' '}
-            <Link href="/register" className="font-medium text-[#00d4ff] hover:text-[#0099bb] transition-colors">
-              create a new account
-            </Link>
-          </p>
-        </div>
-        {errorMsg && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg text-sm text-center">
-            {errorMsg}
+    <div className="page-wrapper min-h-screen flex items-center justify-center bg-grid px-4">
+      <div className="w-full max-w-md animate-slide-up">
+
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="relative w-14 h-14 mx-auto flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan to-orange p-[1.5px] shadow-[0_0_20px_rgba(0,212,255,0.25)] mb-4 animate-pulse-cyan">
+            <div className="w-full h-full bg-[#0a0a12] rounded-[10px] flex items-center justify-center">
+              <svg className="w-8 h-8 text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
           </div>
-        )}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="rounded-md space-y-4">
+          <h1 className="font-display text-2xl font-bold tracking-widest uppercase text-cyan">
+            FitQuanta
+          </h1>
+          <p className="text-text-muted text-sm mt-1">Sign in to your account</p>
+        </div>
+
+        {/* Form card */}
+        <div className="card">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Email address</label>
+              <label className="label">Email address</label>
               <input
                 type="email"
                 {...register('email')}
-                className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] focus:outline-none focus:ring-2 focus:ring-[#00d4ff] focus:border-[#00d4ff] transition-all text-sm"
+                className={`input ${errors.email ? 'input-error' : ''}`}
                 placeholder="you@example.com"
               />
-              {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
+              {errors.email && <p className="error-msg">{errors.email.message}</p>}
             </div>
+
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Password</label>
+              <label className="label">Password</label>
               <input
                 type="password"
                 {...register('password')}
-                className="appearance-none rounded-xl relative block w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] focus:outline-none focus:ring-2 focus:ring-[#00d4ff] focus:border-[#00d4ff] transition-all text-sm"
+                className={`input ${errors.password ? 'input-error' : ''}`}
                 placeholder="••••••••"
               />
-              {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
+              {errors.password && <p className="error-msg">{errors.password.message}</p>}
             </div>
-          </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-[#0a0a0f] bg-[#00d4ff] hover:bg-[#0099bb] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00d4ff] disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(0,212,255,0.2)]"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-          </div>
-        </form>
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary w-full py-3 text-base mt-2"
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </button>
+            </div>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-text-muted">
+            Don't have an account?{' '}
+            <Link href="/register" className="font-medium text-cyan hover:text-cyan-dim transition-colors">
+              Create a new account
+            </Link>
+          </p>
+        </div>
+
       </div>
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
     </div>
   );
 }

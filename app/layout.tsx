@@ -6,13 +6,17 @@ import QueryProvider from "@/components/QueryProvider";
 import Navbar from "@/components/Navbar";
 
 const orbitron = Orbitron({
-  variable: "--font-orbitron",
-  subsets: ["latin"],
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '900'],
+  variable: '--font-display',
+  display: 'swap',
 });
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-body',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -27,7 +31,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${orbitron.variable} ${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-[#e2e8f0] font-body">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#0a0a12] text-[#e2e8f0] font-body">
         <ReduxProvider>
           <QueryProvider>
             <Navbar />

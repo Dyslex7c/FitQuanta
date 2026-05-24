@@ -175,26 +175,24 @@ export default function ProgressPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-[85vh] bg-[#0a0a0f] py-10 px-6 font-body text-[#e2e8f0]">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <div className="page-wrapper">
+        <div className="page-content space-y-12">
           {/* Header */}
-          <div className="text-center">
-            <h1 className="font-display text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00d4ff] to-[#ff6b35] mb-2 drop-shadow-[0_0_10px_rgba(0,212,255,0.2)]">
-              Progress & Logs Analytics
-            </h1>
-            <p className="text-sm text-[#94a3b8]">
+          <div className="mb-8 animate-fade-in text-center md:text-left">
+            <h1 className="page-title text-cyan">Progress & Logs</h1>
+            <p className="text-text-muted text-sm mt-1">
               Record your metrics and view real-time charts powered by Recharts.
             </p>
           </div>
 
           {/* Form and Input Panel */}
-          <div className="bg-[#12121a] p-8 rounded-2xl border border-[#1e1e2e] shadow-[0_0_20px_rgba(0,0,0,0.3)] max-w-2xl mx-auto">
-            <h2 className="font-display text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00d4ff] to-[#ff6b35] mb-6">
+          <div className="card max-w-2xl mx-auto">
+            <h2 className="section-title text-base mb-6">
               Log Daily Metric
             </h2>
 
             {/* Form Tab Toggles */}
-            <div className="flex bg-[#0a0a0f] p-1.5 rounded-xl border border-[#1e1e2e] mb-6">
+            <div className="tab-bar mb-6">
               {(['workout', 'nutrition', 'health'] as const).map((t) => (
                 <button
                   key={t}
@@ -202,11 +200,7 @@ export default function ProgressPage() {
                   onClick={() => {
                     setActiveFormTab(t);
                   }}
-                  className={`flex-1 py-2 text-xs font-bold rounded-lg capitalize transition-all ${
-                    activeFormTab === t
-                      ? 'bg-[#00d4ff] text-[#0a0a0f] shadow-[0_0_10px_rgba(0,212,255,0.3)]'
-                      : 'text-[#94a3b8] hover:text-[#e2e8f0]'
-                  }`}
+                  className={`${activeFormTab === t ? 'tab-item-active' : 'tab-item'} capitalize`}
                 >
                   {t}
                 </button>
@@ -216,19 +210,19 @@ export default function ProgressPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Date Input */}
               <div>
-                <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Date & Time</label>
+                <label className="label">Date & Time</label>
                 <input
                   type="datetime-local"
                   {...register('date')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className={`input ${errors.date ? 'input-error' : ''}`}
                 />
-                {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date.message}</p>}
+                {errors.date && <p className="error-msg">{errors.date.message}</p>}
               </div>
 
               {/* Workout Fields */}
               {activeFormTab === 'workout' && (
-                <div className="space-y-4 border-t border-[#1e1e2e] pt-4">
-                  <h4 className="text-sm font-bold text-[#00d4ff] mb-2">Workout Exercises</h4>
+                <div className="space-y-4 border-t border-border pt-4">
+                  <h4 className="text-sm font-bold text-cyan mb-2">Workout Exercises</h4>
 
                   {/* Exercise List */}
                   {exerciseFields.length > 0 && (
@@ -236,11 +230,10 @@ export default function ProgressPage() {
                       {exerciseFields.map((field, i) => (
                         <div
                           key={field.id}
-                          className="flex justify-between items-center bg-[#0a0a0f] p-3 rounded-xl border border-[#1e1e2e]"
+                          className="flex justify-between items-center bg-raised p-3 rounded-lg border border-border"
                         >
                           <div>
-                            <span className="font-bold text-sm text-[#e2e8f0]">
-                              {/* Registered in form state */}
+                            <span className="font-semibold text-sm text-text-primary">
                               <input
                                 type="hidden"
                                 {...register(`exercises.${i}.name` as const)}
@@ -259,14 +252,14 @@ export default function ProgressPage() {
                               />
                               {field.name}
                             </span>
-                            <span className="block text-[10px] text-[#94a3b8]">
-                              {field.sets} sets &times; {field.reps} reps @ {field.weight} kg
+                            <span className="block text-[10px] text-text-muted mt-0.5">
+                              <span className="font-mono">{field.sets}</span> sets &times; <span className="font-mono">{field.reps}</span> reps @ <span className="font-mono">{field.weight}</span> kg
                             </span>
                           </div>
                           <button
                             type="button"
                             onClick={() => removeExercise(i)}
-                            className="text-red-500 hover:text-red-400 text-xs font-bold"
+                            className="text-red hover:text-red/80 text-xs font-semibold"
                           >
                             Remove
                           </button>
@@ -276,41 +269,41 @@ export default function ProgressPage() {
                   )}
 
                   {/* Add Exercise Panel */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#0a0a0f] p-4 rounded-xl border border-[#1e1e2e]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface p-4 rounded-lg border border-border">
                     <div className="col-span-1 sm:col-span-2">
-                      <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">Exercise Name</label>
+                      <label className="label">Exercise Name</label>
                       <input
                         type="text"
                         value={tempExercise.name}
                         onChange={(e) => setTempExercise({ ...tempExercise, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                        className="input"
                         placeholder="e.g. Bench Press"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">Sets</label>
+                      <label className="label">Sets</label>
                       <input
                         type="number"
                         value={tempExercise.sets}
                         onChange={(e) =>
                           setTempExercise({ ...tempExercise, sets: parseInt(e.target.value) || 0 })
                         }
-                        className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                        className="input font-mono"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">Reps</label>
+                      <label className="label">Reps</label>
                       <input
                         type="number"
                         value={tempExercise.reps}
                         onChange={(e) =>
                           setTempExercise({ ...tempExercise, reps: parseInt(e.target.value) || 0 })
                         }
-                        className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                        className="input font-mono"
                       />
                     </div>
                     <div className="col-span-1 sm:col-span-2">
-                      <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">Weight (kg)</label>
+                      <label className="label">Weight (kg)</label>
                       <input
                         type="number"
                         step="0.5"
@@ -318,14 +311,14 @@ export default function ProgressPage() {
                         onChange={(e) =>
                           setTempExercise({ ...tempExercise, weight: parseFloat(e.target.value) || 0 })
                         }
-                        className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                        className="input font-mono"
                       />
                     </div>
                     <div className="col-span-1 sm:col-span-2 pt-2">
                       <button
                         type="button"
                         onClick={addExerciseToList}
-                        className="w-full py-2 bg-[#1e1e2e] hover:bg-[#1e1e2e]/80 text-[#00d4ff] border border-[#00d4ff]/20 text-xs font-bold rounded-lg transition-all"
+                        className="w-full btn-secondary text-xs py-2 px-4"
                       >
                         + Add Exercise to List
                       </button>
@@ -336,95 +329,95 @@ export default function ProgressPage() {
 
               {/* Nutrition Fields */}
               {activeFormTab === 'nutrition' && (
-                <div className="grid grid-cols-2 gap-4 border-t border-[#1e1e2e] pt-4">
+                <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Calories (kcal)</label>
+                    <label className="label">Calories (kcal)</label>
                     <input
                       type="number"
                       {...register('calories', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                      className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                      className={`input font-mono ${errors.calories ? 'input-error' : ''}`}
                       placeholder="e.g. 2100"
                     />
-                    {errors.calories && <p className="text-red-500 text-xs mt-1">{errors.calories.message}</p>}
+                    {errors.calories && <p className="error-msg">{errors.calories.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Protein (g)</label>
+                    <label className="label">Protein (g)</label>
                     <input
                       type="number"
                       {...register('protein', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                      className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                      className={`input font-mono ${errors.protein ? 'input-error' : ''}`}
                       placeholder="e.g. 140"
                     />
-                    {errors.protein && <p className="text-red-500 text-xs mt-1">{errors.protein.message}</p>}
+                    {errors.protein && <p className="error-msg">{errors.protein.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Carbs (g)</label>
+                    <label className="label">Carbs (g)</label>
                     <input
                       type="number"
                       {...register('carbs', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                      className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                      className={`input font-mono ${errors.carbs ? 'input-error' : ''}`}
                       placeholder="e.g. 220"
                     />
-                    {errors.carbs && <p className="text-red-500 text-xs mt-1">{errors.carbs.message}</p>}
+                    {errors.carbs && <p className="error-msg">{errors.carbs.message}</p>}
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Fats (g)</label>
+                    <label className="label">Fats (g)</label>
                     <input
                       type="number"
                       {...register('fats', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                      className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                      className={`input font-mono ${errors.fats ? 'input-error' : ''}`}
                       placeholder="e.g. 70"
                     />
-                    {errors.fats && <p className="text-red-500 text-xs mt-1">{errors.fats.message}</p>}
+                    {errors.fats && <p className="error-msg">{errors.fats.message}</p>}
                   </div>
                 </div>
               )}
 
               {/* Health Fields */}
               {activeFormTab === 'health' && (
-                <div className="space-y-6 border-t border-[#1e1e2e] pt-4">
+                <div className="space-y-6 border-t border-border pt-4">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Sleep Hours</label>
+                      <label className="label">Sleep Hours</label>
                       <input
                         type="number"
                         step="0.5"
                         {...register('sleepHours', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                        className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                        className={`input font-mono ${errors.sleepHours ? 'input-error' : ''}`}
                         placeholder="e.g. 7.5"
                       />
                       {errors.sleepHours && (
-                        <p className="text-red-500 text-xs mt-1">{errors.sleepHours.message}</p>
+                        <p className="error-msg">{errors.sleepHours.message}</p>
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Daily Steps</label>
+                      <label className="label">Daily Steps</label>
                       <input
                         type="number"
                         {...register('steps', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                        className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                        className={`input font-mono ${errors.steps ? 'input-error' : ''}`}
                         placeholder="e.g. 10000"
                       />
-                      {errors.steps && <p className="text-red-500 text-xs mt-1">{errors.steps.message}</p>}
+                      {errors.steps && <p className="error-msg">{errors.steps.message}</p>}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Body Weight (kg)</label>
+                      <label className="label">Body Weight (kg)</label>
                       <input
                         type="number"
                         step="0.1"
                         {...register('bodyWeight', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-                        className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                        className={`input font-mono ${errors.bodyWeight ? 'input-error' : ''}`}
                         placeholder="e.g. 72.4"
                       />
                       {errors.bodyWeight && (
-                        <p className="text-red-500 text-xs mt-1">{errors.bodyWeight.message}</p>
+                        <p className="error-msg">{errors.bodyWeight.message}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Cardio Entry Section */}
                   <div className="space-y-4 pt-2">
-                    <h5 className="text-sm font-bold text-[#ff6b35]">Cardio Activities</h5>
+                    <h5 className="text-sm font-bold text-orange uppercase tracking-wider">Cardio Activities</h5>
 
                     {/* Cardio List */}
                     {cardioFields.length > 0 && (
@@ -432,10 +425,10 @@ export default function ProgressPage() {
                         {cardioFields.map((field, i) => (
                           <div
                             key={field.id}
-                            className="flex justify-between items-center bg-[#0a0a0f] p-3 rounded-xl border border-[#1e1e2e]"
+                            className="flex justify-between items-center bg-raised p-3 rounded-lg border border-border"
                           >
                             <div>
-                              <span className="font-bold text-sm text-[#e2e8f0]">
+                              <span className="font-semibold text-sm text-text-primary">
                                 <input
                                   type="hidden"
                                   {...register(`cardio.${i}.activity` as const)}
@@ -448,14 +441,14 @@ export default function ProgressPage() {
                                 />
                                 {field.activity}
                               </span>
-                              <span className="block text-[10px] text-[#94a3b8]">
-                                {field.durationMinutes} mins
+                              <span className="block text-[10px] text-text-muted mt-0.5">
+                                <span className="font-mono">{field.durationMinutes}</span> mins
                               </span>
                             </div>
                             <button
                               type="button"
                               onClick={() => removeCardio(i)}
-                              className="text-red-500 hover:text-red-400 text-xs font-bold"
+                              className="text-red hover:text-red/80 text-xs font-semibold"
                             >
                               Remove
                             </button>
@@ -465,21 +458,21 @@ export default function ProgressPage() {
                     )}
 
                     {/* Add Cardio Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#0a0a0f] p-4 rounded-xl border border-[#1e1e2e]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface p-4 rounded-lg border border-border">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">
+                        <label className="label">
                           Activity Name
                         </label>
                         <input
                           type="text"
                           value={tempCardio.activity}
                           onChange={(e) => setTempCardio({ ...tempCardio, activity: e.target.value })}
-                          className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                          className="input"
                           placeholder="e.g. Running"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#94a3b8] mb-1">
+                        <label className="label">
                           Duration (minutes)
                         </label>
                         <input
@@ -488,14 +481,14 @@ export default function ProgressPage() {
                           onChange={(e) =>
                             setTempCardio({ ...tempCardio, durationMinutes: parseInt(e.target.value) || 0 })
                           }
-                          className="w-full px-3 py-2 border border-[#1e1e2e] bg-[#12121a] text-[#e2e8f0] rounded-lg text-xs"
+                          className="input font-mono"
                         />
                       </div>
                       <div className="col-span-1 sm:col-span-2 pt-2">
                         <button
                           type="button"
                           onClick={addCardioToList}
-                          className="w-full py-2 bg-[#1e1e2e] hover:bg-[#1e1e2e]/80 text-[#ff6b35] border border-[#ff6b35]/20 text-xs font-bold rounded-lg transition-all"
+                          className="w-full btn-secondary text-xs py-2 px-4 text-orange border-orange/50 hover:bg-orange/10"
                         >
                           + Add Cardio Activity
                         </button>
@@ -507,22 +500,22 @@ export default function ProgressPage() {
 
               {/* Notes Textarea (Optional) */}
               <div>
-                <label className="block text-xs font-semibold text-[#94a3b8] mb-1">Notes</label>
+                <label className="label">Notes</label>
                 <textarea
                   {...register('notes')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl text-sm focus:ring-1 focus:ring-[#00d4ff] focus:outline-none"
+                  className={`input ${errors.notes ? 'input-error' : ''}`}
                   placeholder="Additional thoughts, feelings, or details..."
                   rows={2}
                   maxLength={500}
                 />
-                {errors.notes && <p className="text-red-500 text-xs mt-1">{errors.notes.message}</p>}
+                {errors.notes && <p className="error-msg">{errors.notes.message}</p>}
               </div>
 
               <div>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 bg-[#00d4ff] text-[#0a0a0f] rounded-xl font-bold hover:bg-[#0099bb] shadow-[0_0_15px_rgba(0,212,255,0.2)] transition-all disabled:opacity-50"
+                  className="w-full btn-primary"
                 >
                   {submitting ? 'Saving Entry...' : 'Save Log Entry'}
                 </button>
@@ -532,63 +525,63 @@ export default function ProgressPage() {
 
           {/* Charts Grid */}
           <div>
-            <h2 className="font-display text-2xl font-bold tracking-wider mb-8 text-center md:text-left">
+            <h2 className="section-title mb-8 text-center md:text-left">
               Metric Progress Charts
             </h2>
 
             {isLoading ? (
               <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00d4ff]"></div>
+                <div className="spinner-lg"></div>
               </div>
             ) : error ? (
-              <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-xl text-sm text-center">
+              <div className="alert-danger text-center">
                 Failed to load metrics charts data.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* 1. Weight Progress */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Weight Progress
                   </h3>
                   <WeightChart data={getWeightData(logs)} />
                 </div>
 
                 {/* 2. Workout Volume Progress */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Workout Volume
                   </h3>
                   <WorkoutChart logs={logs} />
                 </div>
 
                 {/* 3. Nutrition Macros */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Nutrition Breakdown
                   </h3>
                   <NutritionChart data={getMacroData(logs)} />
                 </div>
 
                 {/* 4. Calories Intake */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Calorie Intake vs. Target
                   </h3>
                   <CalorieChart data={getCalorieData(logs)} />
                 </div>
 
                 {/* 5. Sleep Hours */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Sleep Analysis
                   </h3>
                   <SleepChart data={getSleepData(logs)} />
                 </div>
 
                 {/* 6. Daily Steps */}
-                <div className="bg-[#12121a] p-6 rounded-2xl border border-[#1e1e2e] shadow-[0_0_15px_rgba(0,0,0,0.2)]">
-                  <h3 className="font-display text-sm font-bold tracking-wider text-[#94a3b8] uppercase mb-4">
+                <div className="card">
+                  <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
                     Steps Walked
                   </h3>
                   <StepsChart data={getStepsData(logs)} />

@@ -13,7 +13,7 @@ import axios from 'axios';
 export default function OnboardingForm() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { token, user } = useSelector((state: RootState) => state.auth);
+  const { token } = useSelector((state: RootState) => state.auth);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -37,7 +37,6 @@ export default function OnboardingForm() {
   });
 
   const nextStep = async () => {
-    // Validate current step fields before going forward
     let fieldsToValidate: Array<keyof OnboardingInput> = [];
     if (step === 1) {
       fieldsToValidate = ['age', 'gender', 'height', 'weight', 'country'];
@@ -61,7 +60,6 @@ export default function OnboardingForm() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      // Parse list strings to arrays
       const finalData = {
         ...data,
         foodAllergies: foodAllergiesInput
@@ -79,13 +77,9 @@ export default function OnboardingForm() {
         onboardingComplete: true,
       };
 
-      // Call API PUT /api/profile
       const profileRes = await axios.put('/api/profile', finalData);
       if (profileRes.data.success) {
-        // Trigger BMI post
         await axios.post('/api/bmi');
-        
-        // Refresh profile details in state
         const freshProfileRes = await axios.get('/api/profile');
         if (freshProfileRes.data.success && token) {
           dispatch(setCredentials({ token, user: freshProfileRes.data.data }));
@@ -100,22 +94,19 @@ export default function OnboardingForm() {
   };
 
   return (
-    <div className="w-full max-w-2xl bg-[#12121a] p-8 rounded-2xl border border-[#1e1e2e] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+    <div className="card max-w-2xl mx-auto shadow-lg animate-slide-up">
       {/* Progress Tracker */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="flex items-center justify-between mb-8">
         {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex-1 flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-display text-sm font-bold border transition-all ${
-              step >= s 
-                ? 'bg-[#00d4ff] text-[#0a0a0f] border-[#00d4ff] shadow-[0_0_10px_rgba(0,212,255,0.4)]'
-                : 'bg-[#0a0a0f] text-[#94a3b8] border-[#1e1e2e]'
-            }`}>
-              {s}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all
+              ${step > s ? 'bg-cyan border-cyan text-bg shadow-cyan' :
+                step === s ? 'bg-cyan/10 border-cyan text-cyan' :
+                'bg-raised border-border text-text-hint'}`}>
+              {step > s ? '✓' : s}
             </div>
             {s < 4 && (
-              <div className={`flex-1 h-[2px] mx-2 transition-all ${
-                step > s ? 'bg-[#00d4ff]' : 'bg-[#1e1e2e]'
-              }`} />
+              <div className={`flex-1 h-px mx-2 ${step > s ? 'bg-cyan' : 'bg-border'}`} />
             )}
           </div>
         ))}
@@ -127,64 +118,64 @@ export default function OnboardingForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Step 1: Basic info */}
         {step === 1 && (
           <div className="space-y-4">
-            <h3 className="font-display text-xl font-bold text-[#e2e8f0] mb-4">Step 1: Personal Info</h3>
+            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 1: Personal Info</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Age</label>
+                <label className="label">Age</label>
                 <input
                   type="number"
                   {...register('age', { valueAsNumber: true })}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className={`input ${errors.age ? 'border-red/60' : ''}`}
                   placeholder="e.g. 25"
                 />
-                {errors.age && <p className="mt-1 text-xs text-red-500">{errors.age.message as any}</p>}
+                {errors.age && <p className="error-msg">{errors.age.message as any}</p>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Gender</label>
+                <label className="label">Gender</label>
                 <select
                   {...register('gender')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
-                {errors.gender && <p className="mt-1 text-xs text-red-500">{errors.gender.message as any}</p>}
+                {errors.gender && <p className="error-msg">{errors.gender.message as any}</p>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Height (cm)</label>
+                <label className="label">Height (cm)</label>
                 <input
                   type="number"
                   {...register('height', { valueAsNumber: true })}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className={`input ${errors.height ? 'border-red/60' : ''}`}
                   placeholder="e.g. 175"
                 />
-                {errors.height && <p className="mt-1 text-xs text-red-500">{errors.height.message as any}</p>}
+                {errors.height && <p className="error-msg">{errors.height.message as any}</p>}
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Weight (kg)</label>
+                <label className="label">Weight (kg)</label>
                 <input
                   type="number"
                   {...register('weight', { valueAsNumber: true })}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className={`input ${errors.weight ? 'border-red/60' : ''}`}
                   placeholder="e.g. 70"
                 />
-                {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight.message as any}</p>}
+                {errors.weight && <p className="error-msg">{errors.weight.message as any}</p>}
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Country</label>
+              <label className="label">Country</label>
               <input
                 type="text"
                 {...register('country')}
-                className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                className={`input ${errors.country ? 'border-red/60' : ''}`}
                 placeholder="e.g. United States"
               />
-              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country.message as any}</p>}
+              {errors.country && <p className="error-msg">{errors.country.message as any}</p>}
             </div>
           </div>
         )}
@@ -192,13 +183,13 @@ export default function OnboardingForm() {
         {/* Step 2: Fitness info */}
         {step === 2 && (
           <div className="space-y-4">
-            <h3 className="font-display text-xl font-bold text-[#e2e8f0] mb-4">Step 2: Fitness Profile</h3>
+            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 2: Fitness Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Activity Level</label>
+                <label className="label">Activity Level</label>
                 <select
                   {...register('activityLevel')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="sedentary">Sedentary (Little/no exercise)</option>
                   <option value="light">Lightly Active (1-3 days/week)</option>
@@ -208,10 +199,10 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Fitness Level</label>
+                <label className="label">Fitness Level</label>
                 <select
                   {...register('fitnessLevel')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -219,10 +210,10 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Fitness Goal</label>
+                <label className="label">Fitness Goal</label>
                 <select
                   {...register('fitnessGoal')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="fat_loss">Fat Loss</option>
                   <option value="muscle_gain">Muscle Gain</option>
@@ -230,10 +221,10 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Available Equipment</label>
+                <label className="label">Available Equipment</label>
                 <select
                   {...register('equipment')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="none">None (Bodyweight only)</option>
                   <option value="home">Home Gym (Dumbbells/bands)</option>
@@ -247,13 +238,13 @@ export default function OnboardingForm() {
         {/* Step 3: Diet info */}
         {step === 3 && (
           <div className="space-y-4">
-            <h3 className="font-display text-xl font-bold text-[#e2e8f0] mb-4">Step 3: Dietary Preference</h3>
+            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 3: Dietary Preference</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Diet Preference</label>
+                <label className="label">Diet Preference</label>
                 <select
                   {...register('dietPreference')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="veg">Vegetarian</option>
                   <option value="non-veg">Non-Vegetarian</option>
@@ -261,10 +252,10 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Budget Level</label>
+                <label className="label">Budget Level</label>
                 <select
                   {...register('budget')}
-                  className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                  className="input"
                 >
                   <option value="low">Low Budget</option>
                   <option value="medium">Medium Budget</option>
@@ -273,12 +264,12 @@ export default function OnboardingForm() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Food Allergies (comma separated)</label>
+              <label className="label">Food Allergies (comma separated)</label>
               <input
                 type="text"
                 value={foodAllergiesInput}
                 onChange={(e) => setFoodAllergiesInput(e.target.value)}
-                className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                className="input"
                 placeholder="e.g. peanuts, dairy, gluten"
               />
             </div>
@@ -288,37 +279,33 @@ export default function OnboardingForm() {
         {/* Step 4: Medical info & Disclaimer */}
         {step === 4 && (
           <div className="space-y-4">
-            <h3 className="font-display text-xl font-bold text-[#e2e8f0] mb-4">Step 4: Medical Info & Safety</h3>
+            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 4: Medical Info & Safety</h3>
             
-            <div className="bg-[#ff6b35]/15 border border-[#ff6b35] p-4 rounded-xl mb-6 shadow-[0_0_15px_rgba(255,107,53,0.15)]">
-              <h4 className="font-display font-bold text-[#ff6b35] mb-2 flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Medical Safety Gate Disclaimer
-              </h4>
-              <p className="text-xs text-[#e2e8f0] leading-relaxed">
-                If you have medical conditions or injuries, our AI plan generator will be disabled for your safety. You will be matched with certified trainers instead.
+            <div className="alert-warning mb-6">
+              <p className="text-sm text-orange font-semibold mb-1">⚠️ Important safety notice</p>
+              <p className="text-sm text-text-muted">
+                If you report medical conditions or injuries, AI plan generation will be disabled for your safety.
+                You will be connected with certified trainers instead.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Medical Conditions (comma separated)</label>
+              <label className="label">Medical Conditions (comma separated)</label>
               <input
                 type="text"
                 value={medicalConditionsInput}
                 onChange={(e) => setMedicalConditionsInput(e.target.value)}
-                className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                className="input"
                 placeholder="e.g. asthma, diabetes"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Injuries (comma separated)</label>
+              <label className="label">Injuries (comma separated)</label>
               <input
                 type="text"
                 value={injuriesInput}
                 onChange={(e) => setInjuriesInput(e.target.value)}
-                className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
+                className="input"
                 placeholder="e.g. knee pain, lower back strain"
               />
             </div>
@@ -331,7 +318,7 @@ export default function OnboardingForm() {
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 border border-[#1e1e2e] text-[#e2e8f0] rounded-xl hover:bg-[#1e1e2e] text-sm font-bold transition-all"
+              className="btn-ghost text-sm py-2.5 px-6"
             >
               Previous
             </button>
@@ -343,7 +330,7 @@ export default function OnboardingForm() {
             <button
               type="button"
               onClick={nextStep}
-              className="px-6 py-3 bg-[#00d4ff] text-[#0a0a0f] rounded-xl hover:bg-[#0099bb] text-sm font-bold transition-all shadow-[0_0_15px_rgba(0,212,255,0.2)]"
+              className="btn-primary text-sm py-2.5 px-6"
             >
               Next Step
             </button>
@@ -351,7 +338,7 @@ export default function OnboardingForm() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 bg-[#ff6b35] text-[#0a0a0f] rounded-xl hover:bg-[#cc5222] text-sm font-bold transition-all shadow-[0_0_15px_rgba(255,107,53,0.2)] disabled:opacity-50"
+              className="btn-primary bg-orange hover:bg-orange-dim text-bg text-sm py-2.5 px-6"
             >
               {loading ? 'Submitting...' : 'Finish Setup'}
             </button>
