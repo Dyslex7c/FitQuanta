@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   MONGODB_URI: z.string().url(),
-  JWT_SECRET: z.string().min(64, 'JWT_SECRET must be at least 64 characters long'),
-  GROQ_API_KEY: z.string().min(1, 'GROQ_API_KEY is required'),
+  JWT_SECRET: z.string().min(8, 'JWT_SECRET must be at least 8 characters long'),
+  GROQ_API_KEY: z.string().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().optional(),
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
@@ -11,11 +11,33 @@ const envSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
 });
 
-const parsed = envSchema.safeParse(process.env);
+let parsedCache: ReturnType<typeof envSchema.safeParse> | null = null;
 
-if (!parsed.success) {
-  console.error('Invalid environment variables:', parsed.error.format());
-  throw new Error('Environment variable validation failed');
+function getParsed() {
+  if (!parsedCache || !parsedCache.success) {
+    parsedCache = envSchema.safeParse(process.env);
+    if (!parsedCache.success) {
+      console.warn('⚠️ Environment variable validation failed:');
+      console.warn(JSON.stringify(parsedCache.error.format(), null, 2));
+    }
+  }
+  return parsedCache;
 }
 
-export const env = parsed.data;
+export const env = new Proxy({} as z.infer<typeof envSchema>, {
+  get(_, prop: string) {
+    const parsed = getParsed();
+    if (!parsed.success) {
+      const errors = parsed.error.format();
+      if (prop in envSchema.shape && errors[prop as keyof typeof envSchema.shape]) {
+        throw new Error(
+          `Environment variable "${prop}" is missing or invalid: ${JSON.stringify(
+            errors[prop as keyof typeof envSchema.shape]
+          )}`
+        );
+      }
+    }
+    return (parsed.data as Record<string, unknown>)?.[prop] ?? process.env[prop];
+  },
+});
+

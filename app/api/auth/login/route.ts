@@ -31,7 +31,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     }
     const token = signToken({ userId: user._id.toString(), role: user.role });
     const userObj = user.toObject();
-    delete (userObj as Record<string, unknown>).password;
+    delete (userObj as any).password;
     return NextResponse.json({ success: true, data: { token, user: userObj as unknown as IUserProfile } });
   } catch (error: unknown) {
     return handleApiError(error);

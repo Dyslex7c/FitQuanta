@@ -15,8 +15,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<I
       return NextResponse.json({ success: false, message: 'Invalid log data' }, { status: 400 });
     }
     await connectDB();
-    const log = await ProgressLog.create({ ...parsed.data, userId });
-    return NextResponse.json({ success: true, data: log.toObject() as unknown as IProgressLog }, { status: 201 });
+    const log = await ProgressLog.create({ ...parsed.data, userId } as any);
+    return NextResponse.json({ success: true, data: (log as any).toObject() as unknown as IProgressLog }, { status: 201 });
   } catch (error: unknown) {
     return handleApiError(error);
   }

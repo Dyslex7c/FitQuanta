@@ -4,8 +4,8 @@ import React from 'react';
 import type { BMICategory } from '@/types/user';
 
 interface BMICardProps {
-  bmi?: number;
-  bmiCategory?: BMICategory;
+  bmi?: number | undefined;
+  bmiCategory?: BMICategory | undefined;
 }
 
 export default function BMICard({ bmi, bmiCategory }: BMICardProps) {

@@ -8,14 +8,12 @@ interface JWTPayload {
   role: UserRole;
 }
 
-const JWT_SECRET = env.JWT_SECRET;
-
 export function signToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyToken(token: string): JWTPayload {
-  return jwt.verify(token, JWT_SECRET) as JWTPayload;
+  return jwt.verify(token, env.JWT_SECRET) as JWTPayload;
 }
 
 export function verifyAuth(
@@ -55,7 +53,7 @@ export function sanitizeForPrompt(value: string): string {
   return trimmed;
 }
 
-export function handleApiError(error: unknown): NextResponse {
+export function handleApiError(error: unknown): NextResponse<any> {
   console.error('[API ERROR]', error);
   if (error instanceof Error) {
     if (error.message === 'UNAUTHORIZED' || error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {

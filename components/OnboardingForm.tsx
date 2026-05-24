@@ -27,7 +27,7 @@ export default function OnboardingForm() {
     handleSubmit,
     trigger,
     formState: { errors },
-  } = useForm<OnboardingInput>({
+  } = useForm<any>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       foodAllergies: [],
@@ -57,7 +57,7 @@ export default function OnboardingForm() {
     setStep((prev) => prev - 1);
   };
 
-  const onSubmit = async (data: OnboardingInput) => {
+  const onSubmit = async (data: any) => {
     setLoading(true);
     setErrorMsg(null);
     try {
@@ -141,7 +141,7 @@ export default function OnboardingForm() {
                   className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
                   placeholder="e.g. 25"
                 />
-                {errors.age && <p className="mt-1 text-xs text-red-500">{errors.age.message}</p>}
+                {errors.age && <p className="mt-1 text-xs text-red-500">{errors.age.message as any}</p>}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Gender</label>
@@ -153,7 +153,7 @@ export default function OnboardingForm() {
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
-                {errors.gender && <p className="mt-1 text-xs text-red-500">{errors.gender.message}</p>}
+                {errors.gender && <p className="mt-1 text-xs text-red-500">{errors.gender.message as any}</p>}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Height (cm)</label>
@@ -163,7 +163,7 @@ export default function OnboardingForm() {
                   className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
                   placeholder="e.g. 175"
                 />
-                {errors.height && <p className="mt-1 text-xs text-red-500">{errors.height.message}</p>}
+                {errors.height && <p className="mt-1 text-xs text-red-500">{errors.height.message as any}</p>}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-[#94a3b8] mb-1">Weight (kg)</label>
@@ -173,7 +173,7 @@ export default function OnboardingForm() {
                   className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
                   placeholder="e.g. 70"
                 />
-                {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight.message}</p>}
+                {errors.weight && <p className="mt-1 text-xs text-red-500">{errors.weight.message as any}</p>}
               </div>
             </div>
             <div>
@@ -184,7 +184,7 @@ export default function OnboardingForm() {
                 className="w-full px-4 py-3 border border-[#1e1e2e] bg-[#0a0a0f] text-[#e2e8f0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00d4ff] text-sm"
                 placeholder="e.g. United States"
               />
-              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country.message}</p>}
+              {errors.country && <p className="mt-1 text-xs text-red-500">{errors.country.message as any}</p>}
             </div>
           </div>
         )}

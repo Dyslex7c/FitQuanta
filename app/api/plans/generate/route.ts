@@ -37,17 +37,17 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<I
 
     const s = sanitizeForPrompt;
     const prompt = `Generate a 7-day workout plan and 7-day diet plan for:
-- Age: ${s(String(user.age))}
-- Gender: ${s(user.gender)}
-- BMI: ${s(String(user.bmi))} (${s(user.bmiCategory)})
-- Fitness Level: ${s(user.fitnessLevel)}
-- Activity Level: ${s(user.activityLevel)}
-- Fitness Goal: ${s(user.fitnessGoal)}
-- Equipment: ${s(user.equipment)}
-- Country: ${s(user.country)}
-- Diet Preference: ${s(user.dietPreference)}
-- Budget: ${s(user.budget)}
-- Food Allergies: ${user.foodAllergies.length ? user.foodAllergies.map(s).join(', ') : 'None'}
+- Age: ${s(String(user.age ?? ''))}
+- Gender: ${s(user.gender ?? '')}
+- BMI: ${s(String(user.bmi ?? ''))} (${s(user.bmiCategory ?? '')})
+- Fitness Level: ${s(user.fitnessLevel ?? '')}
+- Activity Level: ${s(user.activityLevel ?? '')}
+- Fitness Goal: ${s(user.fitnessGoal ?? '')}
+- Equipment: ${s(user.equipment ?? '')}
+- Country: ${s(user.country ?? '')}
+- Diet Preference: ${s(user.dietPreference ?? '')}
+- Budget: ${s(user.budget ?? '')}
+- Food Allergies: ${user.foodAllergies?.length ? user.foodAllergies.map(val => s(val ?? '')).join(', ') : 'None'}
 
 Return ONLY a valid JSON object with keys "workoutPlan" (array of 7 objects: {day, exercises: [{name, sets, reps, rest}]}) and "dietPlan" (array of 7 objects: {day, meals: [{name, foods: string[], protein, carbs, fats, calories}]}). No text outside the JSON.`;
 
@@ -78,9 +78,9 @@ Return ONLY a valid JSON object with keys "workoutPlan" (array of 7 objects: {da
       type: 'ai_free',
       workoutPlan: parsed.workoutPlan,
       dietPlan: parsed.dietPlan,
-    });
+    } as any);
 
-    return NextResponse.json({ success: true, data: plan.toObject() as unknown as IPlan });
+    return NextResponse.json({ success: true, data: (plan as any).toObject() as unknown as IPlan });
   } catch (error: unknown) {
     return handleApiError(error);
   }
