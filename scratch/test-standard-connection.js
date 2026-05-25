@@ -1,12 +1,38 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
-const uri = 'mongodb://rit007:HInvB6lzobHltSSE@dulcet-shard-00-00.a62sz.mongodb.net:27017,dulcet-shard-00-01.a62sz.mongodb.net:27017,dulcet-shard-00-02.a62sz.mongodb.net:27017/?authSource=admin&replicaSet=atlas-r5kgao-shard-0&tls=true';
+// Read MONGODB_URI from process.env or .env.local
+let uri = process.env.MONGODB_URI || '';
 
-console.log('Connecting to standard MongoDB Atlas URI...');
+if (!uri) {
+  try {
+    const envPath = path.join(__dirname, '..', '.env.local');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const lines = envContent.split('\n');
+      for (const line of lines) {
+        if (line.trim().startsWith('MONGODB_URI=')) {
+          uri = line.split('MONGODB_URI=')[1].trim().replace(/['"]/g, '');
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    // Ignore and proceed
+  }
+}
+
+if (!uri) {
+  console.error('Error: MONGODB_URI not found in process.env or .env.local');
+  process.exit(1);
+}
+
+console.log('Connecting to standard MongoDB Atlas URI (sanitized)...');
 
 mongoose.connect(uri)
   .then(() => {
-    console.log('Successfully connected to MongoDB Atlas using standard string!');
+    console.log('Successfully connected to MongoDB Atlas!');
     process.exit(0);
   })
   .catch((err) => {

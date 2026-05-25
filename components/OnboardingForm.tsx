@@ -112,25 +112,22 @@ export default function OnboardingForm() {
 
   return (
     <div className="card max-w-2xl mx-auto shadow-lg animate-slide-up">
-      {/* Progress Tracker */}
-      <div className="flex items-center justify-between mb-8">
-        {[1, 2, 3, 4].map((s) => (
-          <div key={s} className="flex-1 flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all
-              ${step > s ? 'bg-cyan border-cyan text-bg shadow-cyan' :
-                step === s ? 'bg-cyan/10 border-cyan text-cyan' :
-                'bg-raised border-border text-text-hint'}`}>
-              {step > s ? '✓' : s}
+      {/* Stepper */}
+      <div className="stepper">
+        {[1, 2, 3, 4].map((stepVal, i) => (
+          <React.Fragment key={i}>
+            <div className={`step-dot ${stepVal < step ? 'step-dot-done' : stepVal === step ? 'step-dot-active' : ''}`}>
+              {stepVal < step ? '✓' : stepVal}
             </div>
-            {s < 4 && (
-              <div className={`flex-1 h-px mx-2 ${step > s ? 'bg-cyan' : 'bg-border'}`} />
+            {i < 3 && (
+              <div className={`step-connector ${stepVal < step ? 'step-connector-done' : ''}`} />
             )}
-          </div>
+          </React.Fragment>
         ))}
       </div>
 
       {errorMsg && (
-        <div className="mb-6 bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-lg text-sm text-center">
+        <div className="mb-6 alert-danger text-center">
           {errorMsg}
         </div>
       )}
@@ -148,14 +145,14 @@ export default function OnboardingForm() {
         {/* Step 1: Basic info */}
         {step === 1 && (
           <div className="space-y-4">
-            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 1: Personal Info</h3>
+            <h3 className="section-title-cyan mb-4">Step 1: Personal Info</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Age</label>
                 <input
                   type="number"
                   {...register('age', { valueAsNumber: true })}
-                  className={`input ${errors.age ? 'border-red/60' : ''}`}
+                  className={`input ${errors.age ? 'input-error' : ''}`}
                   placeholder="e.g. 25"
                 />
                 {errors.age && <p className="error-msg">{errors.age.message as any}</p>}
@@ -177,7 +174,7 @@ export default function OnboardingForm() {
                 <input
                   type="number"
                   {...register('height', { valueAsNumber: true })}
-                  className={`input ${errors.height ? 'border-red/60' : ''}`}
+                  className={`input ${errors.height ? 'input-error' : ''}`}
                   placeholder="e.g. 175"
                 />
                 {errors.height && <p className="error-msg">{errors.height.message as any}</p>}
@@ -187,7 +184,7 @@ export default function OnboardingForm() {
                 <input
                   type="number"
                   {...register('weight', { valueAsNumber: true })}
-                  className={`input ${errors.weight ? 'border-red/60' : ''}`}
+                  className={`input ${errors.weight ? 'input-error' : ''}`}
                   placeholder="e.g. 70"
                 />
                 {errors.weight && <p className="error-msg">{errors.weight.message as any}</p>}
@@ -198,7 +195,7 @@ export default function OnboardingForm() {
               <input
                 type="text"
                 {...register('country')}
-                className={`input ${errors.country ? 'border-red/60' : ''}`}
+                className={`input ${errors.country ? 'input-error' : ''}`}
                 placeholder="e.g. United States"
               />
               {errors.country && <p className="error-msg">{errors.country.message as any}</p>}
@@ -209,7 +206,7 @@ export default function OnboardingForm() {
         {/* Step 2: Fitness info */}
         {step === 2 && (
           <div className="space-y-4">
-            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 2: Fitness Profile</h3>
+            <h3 className="section-title-cyan mb-4">Step 2: Fitness Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Activity Level</label>
@@ -264,7 +261,7 @@ export default function OnboardingForm() {
         {/* Step 3: Diet info */}
         {step === 3 && (
           <div className="space-y-4">
-            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 3: Dietary Preference</h3>
+            <h3 className="section-title-cyan mb-4">Step 3: Dietary Preference</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Diet Preference</label>
@@ -305,14 +302,16 @@ export default function OnboardingForm() {
         {/* Step 4: Medical info & Disclaimer */}
         {step === 4 && (
           <div className="space-y-4">
-            <h3 className="card-title font-display text-lg mb-4 uppercase tracking-wider text-cyan">Step 4: Medical Info & Safety</h3>
+            <h3 className="section-title-cyan mb-4">Step 4: Medical Info & Safety</h3>
             
-            <div className="alert-warning mb-6">
-              <p className="text-sm text-orange font-semibold mb-1">⚠️ Important safety notice</p>
-              <p className="text-sm text-text-muted">
-                If you report medical conditions or injuries, AI plan generation will be disabled for your safety.
-                You will be connected with certified trainers instead.
-              </p>
+            <div className="alert-warning" style={{ marginBottom: '20px' }}>
+              <span style={{ color: '#ff6b2b', fontSize: '14px', marginTop: '1px', flexShrink: 0 }}>⚠</span>
+              <div>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#ff6b2b', marginBottom: '3px' }}>Safety notice</p>
+                <p style={{ fontSize: '12px', color: '#8890a8', lineHeight: 1.6 }}>
+                  If you report medical conditions or injuries, AI plan generation is disabled. You will be guided to certified trainers instead.
+                </p>
+              </div>
             </div>
 
             <div>
@@ -344,7 +343,7 @@ export default function OnboardingForm() {
             <button
               type="button"
               onClick={prevStep}
-              className="btn-ghost text-sm py-2.5 px-6"
+              className="btn btn-ghost btn-sm"
             >
               Previous
             </button>
@@ -356,7 +355,7 @@ export default function OnboardingForm() {
             <button
               type="button"
               onClick={nextStep}
-              className="btn-primary text-sm py-2.5 px-6"
+              className="btn btn-primary btn-sm"
             >
               Next Step
             </button>
@@ -365,7 +364,7 @@ export default function OnboardingForm() {
               type="button"
               disabled={loading}
               onClick={() => handleSubmit(onSubmit)()}
-              className="btn-primary bg-orange hover:bg-orange-dim text-bg text-sm py-2.5 px-6"
+              className="btn btn-primary btn-sm"
             >
               {loading ? 'Submitting...' : 'Finish Setup'}
             </button>

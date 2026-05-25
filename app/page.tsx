@@ -6,64 +6,74 @@ import Link from 'next/link';
 export default function LandingPage() {
   return (
     <main className="page-wrapper">
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center bg-grid overflow-hidden">
-        {/* Glow blobs */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan/5 blur-3xl pointer-events-none" />
-        <div className="absolute top-2/3 left-1/4 w-[300px] h-[300px] rounded-full bg-orange/5 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto animate-fade-in py-12">
-          {/* Cyberpunk mechanical phoenix mini-SVG logo */}
-          <div className="relative w-24 h-24 mx-auto flex items-center justify-center rounded-3xl bg-gradient-to-br from-cyan to-orange p-[2px] shadow-[0_0_30px_rgba(0,212,255,0.35)] mb-8 animate-pulse-cyan">
-            <div className="w-full h-full bg-[#0a0a12] rounded-[22px] flex items-center justify-center">
-              <svg className="w-12 h-12 text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-          </div>
+      {/* Hero — void black with grid and cold moon glow behind center */}
+      <section className="bg-void-grid" style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
 
-          <h1 className="font-display text-5xl sm:text-6xl font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan to-purple mb-4 drop-shadow-[0_0_15px_rgba(0,212,255,0.25)]">
+        {/* Moon radial — faint cold glow in the center, like in the logo */}
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 50% 45%, rgba(126,184,232,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* Warm glow bottom — fire from the tail */}
+        <div style={{ position: 'absolute', bottom: '10%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '200px', background: 'radial-gradient(ellipse at center, rgba(255,107,43,0.06) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        <div className="animate-fade-in" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 24px', maxWidth: '580px', margin: '0 auto' }}>
+
+          <img src="/logo.png" alt="FitQuanta" style={{ height: '100px', width: '100px', margin: '0 auto 28px', display: 'block' }} />
+
+          {/* Chrome-tinted title — matches the metallic wordmark in the logo */}
+          <h1 style={{
+            fontFamily: 'var(--font-display), Orbitron, sans-serif',
+            fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+            fontWeight: 900,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundImage: 'linear-gradient(180deg, #eceef4 0%, #7eb8e8 60%, #00d4ff 100%)',
+            backgroundClip: 'text',
+            marginBottom: '16px',
+            lineHeight: 1.05,
+          }}>
             FitQuanta
           </h1>
 
-          <p className="text-text-muted text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            AI-powered fitness plans. Professional trainers. Your progress, visualised.
+          <p style={{ fontSize: '16px', color: '#8890a8', lineHeight: 1.7, maxWidth: '420px', margin: '0 auto 10px' }}>
+            AI-powered fitness plans built around you. Track progress. Train with certified coaches.
+          </p>
+          <p style={{ fontSize: '12px', color: '#545870', marginBottom: '40px' }}>
+            Free for users without medical conditions.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="btn-primary text-base px-8 py-3 text-center">
-              Start for free
-            </Link>
-            <Link href="/login" className="btn-secondary text-base px-8 py-3 text-center">
-              Sign in
-            </Link>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/register" className="btn btn-primary btn-lg">Get started free</Link>
+            <Link href="/login" className="btn btn-outline btn-lg">Sign in</Link>
           </div>
 
-          {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 text-left">
-            <div className="card">
-              <h3 className="font-display font-bold text-lg text-cyan mb-2">1. BMI Tracking</h3>
-              <p className="text-text-muted text-sm leading-relaxed">
-                Verify your metrics on our secure platform. View color-coded scales mapping your category accurately.
-              </p>
-            </div>
-            <div className="card">
-              <h3 className="font-display font-bold text-lg text-orange mb-2">2. Llama AI Plans</h3>
-              <p className="text-text-muted text-sm leading-relaxed">
-                Get clean diet recipes and structured exercise routines computed client-side and saved into MongoDB.
-              </p>
-            </div>
-            <div className="card">
-              <h3 className="font-display font-bold text-lg text-cyan mb-2">3. Safety Gate</h3>
-              <p className="text-text-muted text-sm leading-relaxed">
-                Automatic validation halts LLM injection and skips query outputs if injuries or conditions are reported.
-              </p>
-            </div>
-          </div>
+          {/* Trust line */}
+          <p style={{ fontSize: '12px', color: '#545870', marginTop: '36px', letterSpacing: '0.04em' }}>
+            No credit card &nbsp;·&nbsp; Free AI plans &nbsp;·&nbsp; Cancel anytime
+          </p>
         </div>
       </section>
+
+      {/* Features strip */}
+      <section style={{ borderTop: '1px solid #22223a', background: '#0d0d14' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '64px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '48px' }}>
+          {[
+            { accent: '#00d4ff', label: 'AI Plans', body: '7-day workout and diet plan generated from your profile in seconds. Free, no conditions.' },
+            { accent: '#1ed696', label: 'Progress Tracking', body: 'Log workouts, meals, sleep and steps. Six charts show your progress over time.' },
+            { accent: '#ff6b2b', label: 'Certified Trainers', body: 'Medical condition? Buy a customised plan from a verified trainer on our marketplace.' },
+          ].map(f => (
+            <div key={f.label}>
+              <p style={{ fontFamily: 'var(--font-display), Orbitron, sans-serif', fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: f.accent, marginBottom: '10px' }}>
+                {f.label}
+              </p>
+              <p style={{ fontSize: '13px', color: '#8890a8', lineHeight: 1.7 }}>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
     </main>
   );
 }

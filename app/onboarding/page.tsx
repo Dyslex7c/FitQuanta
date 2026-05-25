@@ -8,12 +8,10 @@ export default function OnboardingPage() {
   return (
     <ProtectedRoute>
       <div className="page-wrapper py-12">
-        <div className="page-content w-full max-w-2xl animate-fade-in">
-          <div className="text-center mb-8">
-            <h1 className="font-display text-4xl font-extrabold text-cyan mb-2 drop-shadow-[0_0_10px_rgba(0,212,255,0.2)]">
-              Setup Your Profile
-            </h1>
-            <p className="text-sm text-text-muted">
+        <div className="w-full max-w-2xl animate-fade-in mx-auto px-4 sm:px-6">
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ marginBottom: '8px' }}>Setup Your Profile</h1>
+            <p style={{ fontSize: '13px', color: '#8890a8' }}>
               Help us understand your biology, lifestyle, and targets to generate customized plans.
             </p>
           </div>

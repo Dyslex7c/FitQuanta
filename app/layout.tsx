@@ -30,14 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${orbitron.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${orbitron.variable} ${inter.variable}`}>
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0a0a12] text-[#e2e8f0] font-body">
+      <body className="min-h-full flex flex-col bg-bg text-text-primary font-body">
         <ReduxProvider>
           <QueryProvider>
             <Navbar />

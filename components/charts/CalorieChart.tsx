@@ -9,16 +9,16 @@ interface CalorieChartProps {
 }
 
 const C = {
-  cyan:        '#00d4ff',
-  orange:      '#ff6b35',
-  yellow:      '#fbbf24',
-  purple:      '#7b5ea7',
-  green:       '#22c55e',
-  grid:        '#1e1e3a',
-  text:        '#475569',
-  tooltipBg:   '#1a1a2e',
-  tooltipBorder:'#00d4ff33',
-};
+  cyan:    '#00d4ff',
+  fire:    '#ff6b2b',
+  emerald: '#1ed696',
+  moon:    '#7eb8e8',
+  amber:   '#f0a020',
+  chrome:  '#b8c4d4',
+  grid:    '#22223a',
+  axis:    '#545870',
+  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+} as const;
 
 export default function CalorieChart({ data, targetCalories = 2000 }: CalorieChartProps) {
   const [mounted, setMounted] = useState(false);
@@ -30,12 +30,11 @@ export default function CalorieChart({ data, targetCalories = 2000 }: CalorieCha
   if (!mounted) return <div className="h-64 flex items-center justify-center text-sm text-text-muted">Loading...</div>;
 
   if (data.length === 0) {
+    const scrollToForm = () => window.scrollTo({ top: 0, behavior: 'smooth' });
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="text-4xl mb-3">🔥</div>
-        <p className="text-text-muted text-sm font-medium mb-1">No data yet</p>
-        <p className="text-text-hint text-xs mb-4">Start logging to see your progress here.</p>
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="btn-secondary text-xs px-4 py-2">Log now →</button>
+      <div style={{ padding: '52px 0', textAlign: 'center' }}>
+        <p style={{ fontSize: '13px', color: '#545870', marginBottom: '14px' }}>No entries logged yet</p>
+        <button onClick={scrollToForm} className="btn btn-ghost btn-sm">Log your first entry</button>
       </div>
     );
   }
@@ -47,29 +46,29 @@ export default function CalorieChart({ data, targetCalories = 2000 }: CalorieCha
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} style={{ background: 'transparent' }}>
           <defs>
             <linearGradient id="calorieColor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={C.cyan} stopOpacity={0.2}/>
+              <stop offset="5%" stopColor={C.cyan} stopOpacity={0.07}/>
               <stop offset="95%" stopColor={C.cyan} stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid stroke={C.grid} strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="date" tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fill: C.text, fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+          <CartesianGrid stroke={C.grid} strokeDasharray="4 4" vertical={false} />
+          <XAxis dataKey="date" tick={{ fill: C.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: C.axis, fontSize: 11 }} axisLine={false} tickLine={false} width={38} />
           <Tooltip
             contentStyle={{
-              background: C.tooltipBg,
-              border: `1px solid ${C.tooltipBorder}`,
-              borderRadius: '10px',
-              color: '#e2e8f0',
-              fontSize: '13px',
+              background: C.tooltip.bg,
+              border: `1px solid ${C.tooltip.border}`,
+              borderRadius: '8px',
+              color: C.tooltip.text,
+              fontSize: '12px',
             }}
-            cursor={{ stroke: C.grid, strokeWidth: 1 }}
+            cursor={{ stroke: C.grid }}
           />
           <ReferenceLine
             y={targetCalories}
-            stroke={C.orange}
-            strokeDasharray="4 4"
+            stroke={C.fire}
+            strokeDasharray="5 3"
             strokeWidth={1}
-            label={{ value: `Goal: ${targetCalories} kcal`, fill: C.orange, fontSize: 9, position: 'top' }}
+            label={{ value: `Goal: ${targetCalories} kcal`, fill: C.fire, fontSize: 9, position: 'top' }}
           />
           <Area
             type="monotone"
@@ -77,7 +76,7 @@ export default function CalorieChart({ data, targetCalories = 2000 }: CalorieCha
             name="Calories"
             stroke={C.cyan}
             strokeWidth={2}
-            fillOpacity={0.1}
+            fillOpacity={0.07}
             fill="url(#calorieColor)"
           />
         </AreaChart>

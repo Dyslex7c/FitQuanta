@@ -50,29 +50,19 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="page-wrapper min-h-screen flex items-center justify-center bg-grid px-4">
-      <div className="w-full max-w-md animate-slide-up">
+    <div className="page-wrapper" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#06060a' }}>
+      <div className="animate-slide-up" style={{ width: '100%', maxWidth: '380px' }}>
 
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="relative w-14 h-14 mx-auto flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan to-orange p-[1.5px] shadow-[0_0_20px_rgba(0,212,255,0.25)] mb-4 animate-pulse-cyan">
-            <div className="w-full h-full bg-[#0a0a12] rounded-[10px] flex items-center justify-center">
-              <svg className="w-8 h-8 text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="font-display text-2xl font-bold tracking-widest uppercase text-cyan">
-            FitQuanta
-          </h1>
-          <p className="text-text-muted text-sm mt-1">Create your account</p>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <img src="/logo.png" alt="" style={{ height: '52px', width: '52px', margin: '0 auto 18px', display: 'block' }} />
+          <h2 style={{ fontFamily: 'var(--font-display), Orbitron, sans-serif', fontSize: '18px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#eceef4', marginBottom: '6px' }}>
+            Register
+          </h2>
+          <p style={{ fontSize: '13px', color: '#545870' }}>Create your account to get started</p>
         </div>
 
-        {/* Form card */}
         <div className="card">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '16px' }} onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label className="label">Name</label>
               <input
@@ -106,24 +96,20 @@ export default function RegisterPage() {
               {errors.password && <p className="error-msg">{errors.password.message}</p>}
             </div>
 
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full py-3 text-base mt-2"
-              >
-                {loading ? 'Registering...' : 'Register'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+              style={{ width: '100%', marginTop: '4px' }}
+            >
+              {loading ? 'Registering...' : 'Register'}
+            </button>
           </form>
-
-          <p className="mt-6 text-center text-sm text-text-muted">
-            Already have an account?{' '}
-            <Link href="/login" className="font-medium text-cyan hover:text-cyan-dim transition-colors">
-              Sign in to your account
-            </Link>
-          </p>
         </div>
+
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#545870', marginTop: '20px' }}>
+          Already have an account? <Link href="/login" style={{ color: '#00d4ff', fontWeight: 500 }}>Sign in</Link>
+        </p>
 
       </div>
 

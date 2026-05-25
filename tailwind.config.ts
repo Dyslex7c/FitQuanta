@@ -9,88 +9,145 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg:      '#0a0a12',
-        surface: '#12121e',
-        raised:  '#1a1a2e',
-        border:  '#1e1e3a',
+        /* ── Backgrounds — sampled from logo's void backdrop ── */
+        bg:       '#06060a',
+        surface:  '#0d0d14',
+        raised:   '#13131e',
+        overlay:  '#1a1a28',
+        border:   '#22223a',
+        borderhover: '#2e2e4a',
+
+        /* ── Cyan — the circuit lines on the phoenix body ── */
         cyan: {
           DEFAULT: '#00d4ff',
-          dim:     '#0099bb',
-          glow:    'rgba(0,212,255,0.2)',
+          bright:  '#33dfff',
+          dim:     '#008fb3',
+          subtle:  'rgba(0,212,255,0.12)',
+          border:  'rgba(0,212,255,0.28)',
+          glow:    'rgba(0,212,255,0.15)',
         },
-        orange: {
-          DEFAULT: '#ff6b35',
-          dim:     '#cc5222',
-          glow:    'rgba(255,107,53,0.2)',
+
+        /* ── Orange — the fire on the wings and tail ── */
+        fire: {
+          DEFAULT: '#ff6b2b',
+          bright:  '#ff8550',
+          dim:     '#cc5020',
+          subtle:  'rgba(255,107,43,0.12)',
+          border:  'rgba(255,107,43,0.28)',
         },
-        purple: {
-          DEFAULT: '#7b5ea7',
-          dim:     '#5c3f8f',
-          glow:    'rgba(123,94,167,0.2)',
+
+        /* ── Moon blue — the cold backdrop behind the phoenix ── */
+        moon: {
+          DEFAULT: '#7eb8e8',
+          bright:  '#a0ccf4',
+          dim:     '#4a7eb3',
+          subtle:  'rgba(126,184,232,0.10)',
+          border:  'rgba(126,184,232,0.25)',
         },
-        green: {
-          DEFAULT: '#22c55e',
-          dim:     '#16a34a',
-          glow:    'rgba(34,197,94,0.2)',
+
+        /* ── Chrome — the metallic silver of the phoenix body ── */
+        chrome: {
+          DEFAULT: '#b8c4d4',
+          bright:  '#d4dde8',
+          dim:     '#7a8898',
+          subtle:  'rgba(184,196,212,0.08)',
         },
-        yellow: {
-          DEFAULT: '#fbbf24',
-          dim:     '#d97706',
+
+        /* ── Emerald — success, Normal BMI, achievements ── */
+        emerald: {
+          DEFAULT: '#1ed696',
+          dim:     '#12a870',
+          subtle:  'rgba(30,214,150,0.12)',
+          border:  'rgba(30,214,150,0.25)',
         },
-        red: {
-          DEFAULT: '#ef4444',
-          dim:     '#dc2626',
-          glow:    'rgba(239,68,68,0.2)',
+
+        /* ── Amber — fats macro, Underweight BMI ── */
+        amber: {
+          DEFAULT: '#f0a020',
+          dim:     '#c07810',
+          subtle:  'rgba(240,160,32,0.12)',
+          border:  'rgba(240,160,32,0.25)',
         },
+
+        /* ── Violet — achievement badges, streaks ── */
+        violet: {
+          DEFAULT: '#9060f0',
+          dim:     '#6840c0',
+          subtle:  'rgba(144,96,240,0.12)',
+          border:  'rgba(144,96,240,0.25)',
+        },
+
+        /* ── Danger — errors, Obese BMI ── */
+        danger: {
+          DEFAULT: '#f04040',
+          dim:     '#c02828',
+          subtle:  'rgba(240,64,64,0.12)',
+          border:  'rgba(240,64,64,0.25)',
+        },
+
+        /* ── Text scale ── */
         text: {
-          primary: '#e2e8f0',
-          muted:   '#94a3b8',
-          hint:    '#475569',
+          primary:   '#eceef4',
+          secondary: '#8890a8',
+          muted:     '#545870',
+          inverse:   '#06060a',
         },
       },
+
       fontFamily: {
-        display: ['var(--font-display)', 'sans-serif'],
-        body:    ['var(--font-body)', 'sans-serif'],
+        display: ['var(--font-display)', 'Orbitron', 'sans-serif'],
+        body:    ['var(--font-body)', 'Inter', 'sans-serif'],
         mono:    ['"JetBrains Mono"', 'monospace'],
       },
+
       borderRadius: {
-        sm:   '6px',
+        none: '0',
+        sm:   '4px',
+        DEFAULT: '7px',
         md:   '10px',
         lg:   '14px',
         xl:   '20px',
         full: '9999px',
       },
+
       boxShadow: {
-        'cyan':   '0 0 20px rgba(0,212,255,0.25)',
-        'orange': '0 0 20px rgba(255,107,53,0.25)',
-        'purple': '0 0 20px rgba(123,94,167,0.25)',
-        'inner-cyan': 'inset 0 0 12px rgba(0,212,255,0.1)',
+        'cyan-sm':  '0 0 14px rgba(0,212,255,0.2)',
+        'cyan-md':  '0 0 28px rgba(0,212,255,0.18)',
+        'fire-sm':  '0 0 14px rgba(255,107,43,0.2)',
+        'moon-sm':  '0 0 14px rgba(126,184,232,0.18)',
+        'inner':    'inset 0 1px 0 rgba(255,255,255,0.04)',
       },
+
       backgroundImage: {
-        'grid-dark': `linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px)`,
+        'grid-void': `
+          linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px)
+        `,
+        'chrome-text':
+          'linear-gradient(180deg, #d4dde8 0%, #8898b0 50%, #b8c4d4 100%)',
+        'fire-text':
+          'linear-gradient(135deg, #ff8550 0%, #ff6b2b 50%, #cc5020 100%)',
+        'moon-radial':
+          'radial-gradient(ellipse at center, rgba(126,184,232,0.06) 0%, transparent 70%)',
       },
+
       backgroundSize: {
-        'grid': '40px 40px',
+        'grid': '48px 48px',
       },
+
       animation: {
-        'pulse-cyan': 'pulse-cyan 2s cubic-bezier(0.4,0,0.6,1) infinite',
-        'fade-in':    'fadeIn 0.3s ease-out',
-        'slide-up':   'slideUp 0.4s ease-out',
+        'fade-in':    'fadeIn 0.25s ease-out',
+        'slide-up':   'slideUp 0.3s ease-out',
+        'slide-down': 'slideDown 0.25s ease-out',
+        'spin':       'spin 0.75s linear infinite',
+        'pulse-slow': 'pulseSlow 3s ease-in-out infinite',
       },
+
       keyframes: {
-        'pulse-cyan': {
-          '0%, 100%': { opacity: '1' },
-          '50%':      { opacity: '0.5' },
-        },
-        fadeIn: {
-          from: { opacity: '0' },
-          to:   { opacity: '1' },
-        },
-        slideUp: {
-          from: { opacity: '0', transform: 'translateY(12px)' },
-          to:   { opacity: '1', transform: 'translateY(0)' },
-        },
+        fadeIn:    { from:{opacity:'0'}, to:{opacity:'1'} },
+        slideUp:   { from:{opacity:'0',transform:'translateY(10px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+        slideDown: { from:{opacity:'0',transform:'translateY(-8px)'}, to:{opacity:'1',transform:'translateY(0)'} },
+        pulseSlow: { '0%,100%':{opacity:'1'}, '50%':{opacity:'0.55'} },
       },
     },
   },

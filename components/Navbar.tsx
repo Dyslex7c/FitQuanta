@@ -11,90 +11,114 @@ export default function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const showAuthLinks = mounted && isAuthenticated && user;
 
   const handleLogout = () => {
     dispatch(logout());
     router.push('/login');
   };
 
+  const links = showAuthLinks ? [
+    { label: 'Dashboard', href: '/dashboard' },
+    { label: 'My Plan', href: '/plans' },
+    { label: 'Progress', href: '/progress' },
+    ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])
+  ] : [];
+
+
+
   return (
-    <nav className="sticky top-0 z-50 bg-bg/80 backdrop-blur-md border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
+    <nav
+      className="sticky top-0 z-50"
+      style={{
+        background: 'rgba(6,6,10,0.85)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid #22223a',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '1024px',
+          margin: '0 auto',
+          padding: '0 24px',
+          height: '58px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        {/* Logo — the ONE place Orbitron is used prominently */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
+          <img src="/logo.png" alt="FitQuanta" style={{ height: '30px', width: '30px', objectFit: 'contain' }} />
+          <span
+            style={{
+              fontFamily: 'var(--font-display), Orbitron, sans-serif',
+              fontWeight: 700,
+              fontSize: '15px',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#eceef4',
+            }}
+          >
+            FitQuanta
+          </span>
+        </Link>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            {/* Cyberpunk mechanical phoenix mini-SVG logo */}
-            <div className="relative w-8 h-8 flex items-center justify-center rounded-md bg-gradient-to-br from-cyan to-orange p-[1.5px] shadow-[0_0_10px_rgba(0,212,255,0.25)] group-hover:shadow-[0_0_15px_rgba(255,107,53,0.4)] transition-all duration-300">
-              <div className="w-full h-full bg-[#0a0a12] rounded-[5px] flex items-center justify-center">
-                <svg className="w-5 h-5 text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
-              </div>
-            </div>
-            <span className="font-display font-bold text-lg tracking-widest uppercase text-cyan group-hover:text-white transition-colors duration-150">
-              FitQuanta
-            </span>
-          </Link>
-
-          {/* Nav links */}
-          <div className="flex items-center gap-1">
-            {isAuthenticated && user ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="text-sm text-text-muted px-3 py-2 rounded-md hover:text-text-primary hover:bg-raised transition-all duration-150"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/plans"
-                  className="text-sm text-text-muted px-3 py-2 rounded-md hover:text-text-primary hover:bg-raised transition-all duration-150"
-                >
-                  My Plan
-                </Link>
-                <Link
-                  href="/progress"
-                  className="text-sm text-text-muted px-3 py-2 rounded-md hover:text-text-primary hover:bg-raised transition-all duration-150"
-                >
-                  Progress
-                </Link>
-                {user.onboardingComplete === false && (
-                  <Link
-                    href="/onboarding"
-                    className="text-sm text-orange px-3 py-2 rounded-md hover:text-orange-dim hover:bg-raised transition-all duration-150"
-                  >
-                    Onboarding
-                  </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="btn-ghost text-sm py-1.5 px-4 ml-2"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="text-sm text-text-muted px-3 py-2 rounded-md hover:text-text-primary hover:bg-raised transition-all duration-150 mr-2"
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/register"
-                  className="btn-primary text-sm py-1.5 px-4"
-                >
-                  Get started
-                </Link>
-              </>
-            )}
-          </div>
-
+        {/* Nav links — Inter, understated */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                color: link.isWarning ? '#ff6b2b' : '#8890a8',
+                padding: '6px 12px',
+                borderRadius: '7px',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.color = link.isWarning ? '#ff8550' : '#eceef4';
+                el.style.background = '#13131e';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.color = link.isWarning ? '#ff6b2b' : '#8890a8';
+                el.style.background = 'transparent';
+              }}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
+
+        {/* Auth CTA / Logout */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          {showAuthLinks ? (
+            <button onClick={handleLogout} className="btn btn-ghost btn-sm">
+              Log out
+            </button>
+          ) : (
+            <>
+              <Link href="/login" className="btn btn-ghost btn-sm">
+                Log in
+              </Link>
+              <Link href="/register" className="btn btn-primary btn-sm">
+                Get started
+              </Link>
+            </>
+          )}
+        </div>
+
       </div>
     </nav>
   );

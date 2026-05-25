@@ -200,28 +200,28 @@ export default function ProgressPage() {
   return (
     <ProtectedRoute>
       <div className="page-wrapper">
-        <div className="page-content space-y-12">
+        <div className="page-inner space-y-12">
           {/* Header */}
-          <div className="mb-8 animate-fade-in text-center md:text-left">
-            <h1 className="page-title text-cyan">Progress & Logs</h1>
-            <p className="text-text-muted text-sm mt-1">
-              Record your metrics and view real-time charts powered by Recharts.
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ marginBottom: '8px' }}>Progress & Logs</h1>
+            <p style={{ fontSize: '13px', color: '#8890a8' }}>
+              Record your daily parameters and view metrics charts.
             </p>
           </div>
 
           {/* Main Switcher Tab Bar */}
-          <div className="tab-bar max-w-md mx-auto mb-8">
+          <div className="tab-list" style={{ marginBottom: '20px', justifyContent: 'center' }}>
             <button
               type="button"
               onClick={() => setActivePageTab('log')}
-              className={`${activePageTab === 'log' ? 'tab-item-active' : 'tab-item'} font-semibold`}
+              className={activePageTab === 'log' ? 'tab-item tab-item-active' : 'tab-item'}
             >
               Log Progress
             </button>
             <button
               type="button"
               onClick={() => setActivePageTab('analytics')}
-              className={`${activePageTab === 'analytics' ? 'tab-item-active' : 'tab-item'} font-semibold`}
+              className={activePageTab === 'analytics' ? 'tab-item tab-item-active' : 'tab-item'}
             >
               View Analytics
             </button>
@@ -229,13 +229,13 @@ export default function ProgressPage() {
 
           {activePageTab === 'log' ? (
             /* Form and Input Panel */
-            <div className="card max-w-2xl mx-auto">
+            <div className="card max-w-2xl mx-auto mb-8">
               <h2 className="section-title text-base mb-6">
                 Log Daily Metric
               </h2>
 
               {/* Form Tab Toggles */}
-              <div className="tab-bar mb-6">
+              <div className="tab-list" style={{ marginBottom: '20px' }}>
                 {(['workout', 'nutrition', 'health'] as const).map((t) => (
                   <button
                     key={t}
@@ -243,7 +243,8 @@ export default function ProgressPage() {
                     onClick={() => {
                       setActiveFormTab(t);
                     }}
-                    className={`${activeFormTab === t ? 'tab-item-active' : 'tab-item'} capitalize`}
+                    className={activeFormTab === t ? 'tab-item tab-item-active' : 'tab-item'}
+                    style={{ textTransform: 'capitalize' }}
                   >
                     {t}
                   </button>
@@ -265,7 +266,7 @@ export default function ProgressPage() {
                 {/* Workout Fields */}
                 {activeFormTab === 'workout' && (
                   <div className="space-y-4 border-t border-border pt-4">
-                    <h4 className="text-sm font-bold text-cyan mb-2">Workout Exercises</h4>
+                    <h4 className="text-sm font-bold text-mint mb-2">Workout Exercises</h4>
 
                     {/* Exercise List */}
                     {exerciseFields.length > 0 && (
@@ -302,7 +303,7 @@ export default function ProgressPage() {
                             <button
                               type="button"
                               onClick={() => removeExercise(i)}
-                              className="text-red hover:text-red/80 text-xs font-semibold"
+                              className="text-danger hover:text-danger/80 text-xs font-semibold"
                             >
                               Remove
                             </button>
@@ -345,7 +346,7 @@ export default function ProgressPage() {
                           className="input font-mono"
                         />
                       </div>
-                      <div className="col-span-1 sm:col-span-2">
+                      <div className="col-span-1 sm:col-span-2 pt-2">
                         <label className="label">Weight (kg)</label>
                         <input
                           type="number"
@@ -361,7 +362,8 @@ export default function ProgressPage() {
                         <button
                           type="button"
                           onClick={addExerciseToList}
-                          className="w-full btn-secondary text-xs py-2 px-4"
+                          className="btn btn-ghost"
+                          style={{ width: '100%' }}
                         >
                           + Add Exercise to List
                         </button>
@@ -460,7 +462,7 @@ export default function ProgressPage() {
 
                     {/* Cardio Entry Section */}
                     <div className="space-y-4 pt-2">
-                      <h5 className="text-sm font-bold text-orange uppercase tracking-wider">Cardio Activities</h5>
+                      <h5 className="text-sm font-bold text-fire uppercase tracking-wider">Cardio Activities</h5>
 
                       {/* Cardio List */}
                       {cardioFields.length > 0 && (
@@ -491,7 +493,7 @@ export default function ProgressPage() {
                               <button
                                 type="button"
                                 onClick={() => removeCardio(i)}
-                                className="text-red hover:text-red/80 text-xs font-semibold"
+                                className="text-danger hover:text-danger/80 text-xs font-semibold"
                               >
                                 Remove
                               </button>
@@ -531,7 +533,8 @@ export default function ProgressPage() {
                           <button
                             type="button"
                             onClick={addCardioToList}
-                            className="w-full btn-secondary text-xs py-2 px-4 text-orange border-orange/50 hover:bg-orange/10"
+                            className="btn btn-ghost"
+                            style={{ width: '100%' }}
                           >
                             + Add Cardio Activity
                           </button>
@@ -558,7 +561,8 @@ export default function ProgressPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full btn-primary"
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
                   >
                     {submitting ? 'Saving Entry...' : 'Save Log Entry'}
                   </button>
@@ -570,9 +574,7 @@ export default function ProgressPage() {
             <div className="space-y-12">
               {/* Charts Grid */}
               <div>
-                <h2 className="section-title mb-8 text-center md:text-left">
-                  Metric Progress Charts
-                </h2>
+                <h2 className="section-title mb-6">Your Progress</h2>
 
                 {isLoading ? (
                   <div className="flex justify-center py-20">
@@ -583,10 +585,10 @@ export default function ProgressPage() {
                     Failed to load metrics charts data.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* 1. Weight Progress */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Weight Progress
                       </h3>
                       <WeightChart data={getWeightData(logs)} />
@@ -594,7 +596,7 @@ export default function ProgressPage() {
 
                     {/* 2. Workout Volume Progress */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Workout Volume
                       </h3>
                       <WorkoutChart logs={logs} />
@@ -602,7 +604,7 @@ export default function ProgressPage() {
 
                     {/* 3. Nutrition Breakdown */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Nutrition Breakdown
                       </h3>
                       <NutritionChart data={getMacroData(logs)} />
@@ -610,7 +612,7 @@ export default function ProgressPage() {
 
                     {/* 4. Calories Intake */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Calorie Intake vs. Target
                       </h3>
                       <CalorieChart data={getCalorieData(logs)} />
@@ -618,7 +620,7 @@ export default function ProgressPage() {
 
                     {/* 5. Sleep Hours */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Sleep Analysis
                       </h3>
                       <SleepChart data={getSleepData(logs)} />
@@ -626,7 +628,7 @@ export default function ProgressPage() {
 
                     {/* 6. Daily Steps */}
                     <div className="card">
-                      <h3 className="section-title text-sm tracking-wider text-text-muted mb-4">
+                      <h3 className="card-title mb-4">
                         Steps Walked
                       </h3>
                       <StepsChart data={getStepsData(logs)} />
@@ -653,9 +655,9 @@ export default function ProgressPage() {
                           <div>
                             <div className="flex items-center gap-2 mb-1.5">
                               <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
-                                log.type === 'workout' ? 'bg-cyan/10 text-cyan border border-cyan/20' :
-                                log.type === 'nutrition' ? 'bg-green/10 text-green border border-green/20' :
-                                'bg-orange/10 text-orange border border-orange/20'
+                                log.type === 'workout' ? 'bg-sky/10 text-sky border border-sky/20' :
+                                log.type === 'nutrition' ? 'bg-mint/10 text-mint border border-mint/20' :
+                                'bg-fire/10 text-fire border border-fire/20'
                               }`}>
                                 {log.type}
                               </span>
@@ -663,8 +665,8 @@ export default function ProgressPage() {
                                 {new Date(log.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
                               </span>
                             </div>
-                            {log.notes && (
-                              <p className="text-xs text-text-muted italic mt-1">"{log.notes}"</p>
+                            {(log as any).notes && (
+                              <p className="text-xs text-text-muted italic mt-1">"{(log as any).notes}"</p>
                             )}
                           </div>
 
@@ -683,9 +685,9 @@ export default function ProgressPage() {
                             {log.type === 'nutrition' && (
                               <div className="flex gap-3 text-xs">
                                 {log.calories && <div>Cal: <span className="font-mono font-bold text-text-primary">{log.calories}</span> kcal</div>}
-                                {log.protein && <div>P: <span className="font-mono font-bold text-cyan">{log.protein}</span>g</div>}
-                                {log.carbs && <div>C: <span className="font-mono font-bold text-orange">{log.carbs}</span>g</div>}
-                                {log.fats && <div>F: <span className="font-mono font-bold text-yellow">{log.fats}</span>g</div>}
+                                {log.protein && <div>P: <span className="font-mono font-bold text-mint">{log.protein}</span>g</div>}
+                                {log.carbs && <div>C: <span className="font-mono font-bold text-fire">{log.carbs}</span>g</div>}
+                                {log.fats && <div>F: <span className="font-mono font-bold text-amber">{log.fats}</span>g</div>}
                               </div>
                             )}
 
@@ -699,7 +701,7 @@ export default function ProgressPage() {
                                 {log.cardio && log.cardio.length > 0 && (
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {log.cardio.map((c, i) => (
-                                      <span key={i} className="badge bg-orange/10 text-orange border border-orange/20 text-[10px] inline-flex items-center gap-1 px-2 py-0.5 rounded">
+                                      <span key={i} className="badge bg-fire/10 text-fire border border-fire/20 text-[10px] inline-flex items-center gap-1 px-2 py-0.5 rounded">
                                         🏃 {c.activity} (<span className="font-mono">{c.durationMinutes}</span> mins)
                                       </span>
                                     ))}

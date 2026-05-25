@@ -7,10 +7,21 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
+const getStoredUser = (): IUserProfile | null => {
+  if (typeof window === 'undefined') return null;
+  const userStr = localStorage.getItem('fq_user');
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr) as IUserProfile;
+  } catch {
+    return null;
+  }
+};
+
 const initialState: AuthState = {
   token: typeof window !== 'undefined' ? localStorage.getItem('fq_token') : null,
-  user: null,
-  isAuthenticated: false,
+  user: getStoredUser(),
+  isAuthenticated: typeof window !== 'undefined' ? !!localStorage.getItem('fq_token') : false,
 };
 
 const authSlice = createSlice({
@@ -23,7 +34,9 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       if (typeof window !== 'undefined') {
         localStorage.setItem('fq_token', action.payload.token);
-        document.cookie = `fq_token=${action.payload.token}; path=/; max-age=604800; SameSite=Lax; Secure`;
+        localStorage.setItem('fq_user', JSON.stringify(action.payload.user));
+        const isSecure = window.location.protocol === 'https:';
+        document.cookie = `fq_token=${action.payload.token}; path=/; max-age=604800; SameSite=Lax${isSecure ? '; Secure' : ''}`;
       }
     },
     logout(state) {
@@ -32,7 +45,9 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('fq_token');
-        document.cookie = 'fq_token=; path=/; max-age=0; SameSite=Lax; Secure';
+        localStorage.removeItem('fq_user');
+        const isSecure = window.location.protocol === 'https:';
+        document.cookie = `fq_token=; path=/; max-age=0; SameSite=Lax${isSecure ? '; Secure' : ''}`;
       }
     },
   },
@@ -40,3 +55,4 @@ const authSlice = createSlice({
 
 export const { setCredentials, logout } = authSlice.actions;
 export default authSlice.reducer;
+

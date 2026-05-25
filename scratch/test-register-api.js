@@ -2,9 +2,41 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Construct URI from .env.local
-const uri = 'mongodb://rit007:HInvB6lzobHltSSE@dulcet-shard-00-00.a62sz.mongodb.net:27017,dulcet-shard-00-01.a62sz.mongodb.net:27017,dulcet-shard-00-02.a62sz.mongodb.net:27017/?authSource=admin&replicaSet=atlas-r5kgao-shard-0&tls=true';
-const JWT_SECRET = 'supersecretsupersecretsupersecretsupersecretsupersecretsupersecret';
+const fs = require('fs');
+const path = require('path');
+
+// Read MONGODB_URI and JWT_SECRET from process.env or .env.local
+let uri = process.env.MONGODB_URI || '';
+let JWT_SECRET = process.env.JWT_SECRET || '';
+
+if (!uri || !JWT_SECRET) {
+  try {
+    const envPath = path.join(__dirname, '..', '.env.local');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const lines = envContent.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('MONGODB_URI=')) {
+          uri = trimmed.split('MONGODB_URI=')[1].trim().replace(/['"]/g, '');
+        }
+        if (trimmed.startsWith('JWT_SECRET=')) {
+          JWT_SECRET = trimmed.split('JWT_SECRET=')[1].trim().replace(/['"]/g, '');
+        }
+      }
+    }
+  } catch (err) {
+    // Ignore
+  }
+}
+
+if (!uri) {
+  console.error('Error: MONGODB_URI not found in process.env or .env.local');
+  process.exit(1);
+}
+if (!JWT_SECRET) {
+  JWT_SECRET = 'fallback_test_secret_key_only_for_test';
+}
 
 // Schema and Model
 const UserSchema = new mongoose.Schema(
