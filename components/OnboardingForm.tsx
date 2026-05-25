@@ -455,6 +455,7 @@ export default function OnboardingForm() {
 
           {step < 4 ? (
             <button
+              key="next-btn"
               type="button"
               onClick={nextStep}
               className="btn btn-primary btn-sm"
@@ -464,6 +465,7 @@ export default function OnboardingForm() {
             </button>
           ) : (
             <button
+              key="submit-btn"
               type="submit"
               disabled={loading}
               className="btn btn-primary btn-sm"
