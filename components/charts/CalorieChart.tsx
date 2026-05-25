@@ -9,15 +9,14 @@ interface CalorieChartProps {
 }
 
 const C = {
-  cyan:    '#00d4ff',
-  fire:    '#ff6b2b',
-  emerald: '#1ed696',
-  moon:    '#7eb8e8',
-  amber:   '#f0a020',
-  chrome:  '#b8c4d4',
-  grid:    '#22223a',
-  axis:    '#545870',
-  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+  primary:  '#f07028',   /* orange */
+  gold:     '#e8a820',   /* golden yellow */
+  emerald:  '#1ed696',   /* keep green for success */
+  amber:    '#f5c832',   /* bright yellow for fats */
+  chrome:   '#b8c4d4',   /* silver for weight chart */
+  grid:     '#22223a',
+  axis:     '#545870',
+  tooltip:  { bg:'#13131e', border:'#2e2e4a', text:'#ffffff' },
 } as const;
 
 export default function CalorieChart({ data, targetCalories = 2000 }: CalorieChartProps) {
@@ -46,8 +45,8 @@ export default function CalorieChart({ data, targetCalories = 2000 }: CalorieCha
         <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} style={{ background: 'transparent' }}>
           <defs>
             <linearGradient id="calorieColor" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={C.cyan} stopOpacity={0.07}/>
-              <stop offset="95%" stopColor={C.cyan} stopOpacity={0}/>
+              <stop offset="5%" stopColor={C.primary} stopOpacity={0.08}/>
+              <stop offset="95%" stopColor={C.primary} stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid stroke={C.grid} strokeDasharray="4 4" vertical={false} />
@@ -65,18 +64,18 @@ export default function CalorieChart({ data, targetCalories = 2000 }: CalorieCha
           />
           <ReferenceLine
             y={targetCalories}
-            stroke={C.fire}
+            stroke={C.gold}
             strokeDasharray="5 3"
             strokeWidth={1}
-            label={{ value: `Goal: ${targetCalories} kcal`, fill: C.fire, fontSize: 9, position: 'top' }}
+            label={{ value: `Goal: ${targetCalories} kcal`, fill: C.gold, fontSize: 9, position: 'top' }}
           />
           <Area
             type="monotone"
             dataKey="calories"
             name="Calories"
-            stroke={C.cyan}
+            stroke={C.primary}
             strokeWidth={2}
-            fillOpacity={0.07}
+            fillOpacity={0.08}
             fill="url(#calorieColor)"
           />
         </AreaChart>

@@ -42,7 +42,7 @@ function DashboardContent({ user }: { user: any }) {
             <span style={{ color: '#ff6b2b', fontSize: '15px', flexShrink: 0 }}>⚠</span>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: '13px', fontWeight: 600, color: '#ff6b2b', marginBottom: '3px' }}>AI plan unavailable</p>
-              <p style={{ fontSize: '12px', color: '#8890a8' }}>Medical conditions on file. Work with a certified trainer for a safe programme.</p>
+              <p style={{ fontSize: '12px', color: '#9090a0' }}>Medical conditions on file. Work with a certified trainer for a safe programme.</p>
             </div>
             <Link href="/trainer" className="btn btn-fire btn-sm" style={{ flexShrink: 0 }}>Find trainer</Link>
           </div>
@@ -90,19 +90,20 @@ function DashboardContent({ user }: { user: any }) {
           {!hasMedicalGate ? (
             <Link href="/plans" className="card-interactive">
               <p className="section-title-cyan" style={{ marginBottom: '7px' }}>My Plan</p>
-              <p style={{ fontSize: '12px', color: '#8890a8' }}>View AI-generated workout and diet plan</p>
+              <p style={{ fontSize: '12px', color: '#9090a0' }}>View AI-generated workout and diet plan</p>
             </Link>
           ) : (
             <div className="card opacity-60 cursor-not-allowed">
               <p className="section-title" style={{ marginBottom: '7px' }}>My Plan</p>
-              <p style={{ fontSize: '12px', color: '#8890a8' }}>Disabled due to reported medical history</p>
+              <p style={{ fontSize: '12px', color: '#9090a0' }}>Disabled due to reported medical history</p>
             </div>
           )}
           <Link href="/progress" className="card-interactive">
             <p className="section-title" style={{ marginBottom: '7px' }}>Progress</p>
-            <p style={{ fontSize: '12px', color: '#8890a8' }}>Log activity and visualise your charts</p>
+            <p style={{ fontSize: '12px', color: '#9090a0' }}>Log activity and visualise your charts</p>
           </Link>
         </div>
+
 
       </div>
     </div>

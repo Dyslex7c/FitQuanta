@@ -17,17 +17,17 @@ const config: Config = {
         border:   '#22223a',
         borderhover: '#2e2e4a',
 
-        /* ── Cyan — the circuit lines on the phoenix body ── */
-        cyan: {
-          DEFAULT: '#00d4ff',
-          bright:  '#33dfff',
-          dim:     '#008fb3',
-          subtle:  'rgba(0,212,255,0.12)',
-          border:  'rgba(0,212,255,0.28)',
-          glow:    'rgba(0,212,255,0.15)',
+        /* ── Orange (Primary) — from the phoenix fire ── */
+        orange: {
+          DEFAULT: '#f07028',
+          bright:  '#ff8844',
+          dim:     '#c05018',
+          subtle:  'rgba(240,112,40,0.13)',
+          border:  'rgba(240,112,40,0.30)',
+          glow:    'rgba(240,112,40,0.15)',
         },
 
-        /* ── Orange — the fire on the wings and tail ── */
+        /* ── Fire — the fire on the wings and tail ── */
         fire: {
           DEFAULT: '#ff6b2b',
           bright:  '#ff8550',
@@ -36,13 +36,13 @@ const config: Config = {
           border:  'rgba(255,107,43,0.28)',
         },
 
-        /* ── Moon blue — the cold backdrop behind the phoenix ── */
-        moon: {
-          DEFAULT: '#7eb8e8',
-          bright:  '#a0ccf4',
-          dim:     '#4a7eb3',
-          subtle:  'rgba(126,184,232,0.10)',
-          border:  'rgba(126,184,232,0.25)',
+        /* ── Gold (Secondary) — the wing tips ── */
+        gold: {
+          DEFAULT: '#e8a820',
+          bright:  '#f0be40',
+          dim:     '#b87e10',
+          subtle:  'rgba(232,168,32,0.13)',
+          border:  'rgba(232,168,32,0.28)',
         },
 
         /* ── Chrome — the metallic silver of the phoenix body ── */
@@ -87,8 +87,8 @@ const config: Config = {
 
         /* ── Text scale ── */
         text: {
-          primary:   '#eceef4',
-          secondary: '#8890a8',
+          primary:   '#ffffff',
+          secondary: '#9090a0',
           muted:     '#545870',
           inverse:   '#06060a',
         },
@@ -111,25 +111,26 @@ const config: Config = {
       },
 
       boxShadow: {
-        'cyan-sm':  '0 0 14px rgba(0,212,255,0.2)',
-        'cyan-md':  '0 0 28px rgba(0,212,255,0.18)',
+        'orange-sm':  '0 0 14px rgba(240,112,40,0.2)',
+        'orange-md':  '0 0 28px rgba(240,112,40,0.18)',
         'fire-sm':  '0 0 14px rgba(255,107,43,0.2)',
-        'moon-sm':  '0 0 14px rgba(126,184,232,0.18)',
+        'gold-sm':  '0 0 14px rgba(232,168,32,0.18)',
         'inner':    'inset 0 1px 0 rgba(255,255,255,0.04)',
       },
 
       backgroundImage: {
         'grid-void': `
-          linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px)
+          linear-gradient(rgba(240,112,40,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(240,112,40,0.025) 1px, transparent 1px)
         `,
         'chrome-text':
           'linear-gradient(180deg, #d4dde8 0%, #8898b0 50%, #b8c4d4 100%)',
         'fire-text':
           'linear-gradient(135deg, #ff8550 0%, #ff6b2b 50%, #cc5020 100%)',
-        'moon-radial':
-          'radial-gradient(ellipse at center, rgba(126,184,232,0.06) 0%, transparent 70%)',
+        'gold-radial':
+          'radial-gradient(ellipse at center, rgba(232,168,32,0.06) 0%, transparent 70%)',
       },
+
 
       backgroundSize: {
         'grid': '48px 48px',

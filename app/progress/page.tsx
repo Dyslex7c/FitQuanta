@@ -8,9 +8,6 @@ import NutritionChart from '@/components/charts/NutritionChart';
 import CalorieChart from '@/components/charts/CalorieChart';
 import SleepChart from '@/components/charts/SleepChart';
 import StepsChart from '@/components/charts/StepsChart';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { progressLogSchema, ProgressLogInput } from '@/schemas/progressLogSchema';
 import type { IProgressLog } from '@/types/progress';
 import api from '@/lib/axiosInstance';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -52,7 +49,24 @@ export default function ProgressPage() {
     }
   }, []);
 
-  // Temporary state for adding a single exercise dynamically before appending to form field array
+  // Form Fields State
+  const [date, setDate] = useState(getLocalDatetimeString());
+  const [notes, setNotes] = useState('');
+  const [exercises, setExercises] = useState<Array<{ name: string; sets: number; reps: number; weight: number }>>([]);
+  const [cardio, setCardio] = useState<Array<{ activity: string; durationMinutes: number }>>([]);
+
+  const [calories, setCalories] = useState<string>('');
+  const [protein, setProtein] = useState<string>('');
+  const [carbs, setCarbs] = useState<string>('');
+  const [fats, setFats] = useState<string>('');
+
+  const [sleepHours, setSleepHours] = useState<string>('');
+  const [steps, setSteps] = useState<string>('');
+  const [bodyWeight, setBodyWeight] = useState<string>('');
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Temporary state for adding a single exercise dynamically
   const [tempExercise, setTempExercise] = useState({
     name: '',
     sets: 3,
@@ -83,108 +97,162 @@ export default function ProgressPage() {
 
   const logs = logsData || [];
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ProgressLogInput>({
-    resolver: zodResolver(progressLogSchema),
-    defaultValues: {
-      date: getLocalDatetimeString(),
-      type: 'workout',
-      exercises: [],
-      cardio: [],
-      notes: '',
-    },
-  });
+  // Reset form helper
+  const handleReset = () => {
+    setDate(getLocalDatetimeString());
+    setNotes('');
+    setExercises([]);
+    setCardio([]);
+    setCalories('');
+    setProtein('');
+    setCarbs('');
+    setFats('');
+    setSleepHours('');
+    setSteps('');
+    setBodyWeight('');
+    setErrors({});
+  };
 
-  // Field arrays for exercises (Workout tab)
-  const {
-    fields: exerciseFields,
-    append: appendExercise,
-    remove: removeExercise,
-  } = useFieldArray({
-    control,
-    name: 'exercises',
-  });
-
-  // Field arrays for cardio (Health tab)
-  const {
-    fields: cardioFields,
-    append: appendCardio,
-    remove: removeCardio,
-  } = useFieldArray({
-    control,
-    name: 'cardio',
-  });
-
-  // Handle adding exercise to form field array
+  // Add exercise to local state list
   const addExerciseToList = () => {
     if (!tempExercise.name.trim()) return;
-    appendExercise({
-      name: tempExercise.name.trim(),
-      sets: Number(tempExercise.sets) || 1,
-      reps: Number(tempExercise.reps) || 1,
-      weight: Number(tempExercise.weight) || 0,
-    });
+    setExercises((prev) => [
+      ...prev,
+      {
+        name: tempExercise.name.trim(),
+        sets: Number(tempExercise.sets) || 1,
+        reps: Number(tempExercise.reps) || 1,
+        weight: Number(tempExercise.weight) || 0,
+      },
+    ]);
     setTempExercise({ name: '', sets: 3, reps: 10, weight: 60 });
   };
 
-  // Handle adding cardio to form field array
+  // Remove exercise from local state list
+  const removeExercise = (index: number) => {
+    setExercises((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Add cardio to local state list
   const addCardioToList = () => {
     if (!tempCardio.activity.trim()) return;
-    appendCardio({
-      activity: tempCardio.activity.trim(),
-      durationMinutes: Number(tempCardio.durationMinutes) || 1,
-    });
+    setCardio((prev) => [
+      ...prev,
+      {
+        activity: tempCardio.activity.trim(),
+        durationMinutes: Number(tempCardio.durationMinutes) || 1,
+      },
+    ]);
     setTempCardio({ activity: '', durationMinutes: 30 });
   };
 
-  const onSubmit = async (data: ProgressLogInput) => {
+  // Remove cardio from local state list
+  const removeCardio = (index: number) => {
+    setCardio((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Validate form state before submission
+  const validateLog = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!date || isNaN(Date.parse(date))) {
+      newErrors.date = 'Invalid date and time selected';
+    }
+
+    if (activeFormTab === 'workout') {
+      if (exercises.length === 0) {
+        setToast({
+          message: 'Please add at least one exercise to your workout log.',
+          type: 'error',
+        });
+        return false;
+      }
+    } else if (activeFormTab === 'nutrition') {
+      if (calories !== '') {
+        const parsed = Number(calories);
+        if (isNaN(parsed) || parsed < 0 || parsed > 20000) {
+          newErrors.calories = 'Calories must be a number between 0 and 20,000';
+        }
+      }
+      if (protein !== '') {
+        const parsed = Number(protein);
+        if (isNaN(parsed) || parsed < 0 || parsed > 1000) {
+          newErrors.protein = 'Protein must be a number between 0 and 1,000';
+        }
+      }
+      if (carbs !== '') {
+        const parsed = Number(carbs);
+        if (isNaN(parsed) || parsed < 0 || parsed > 2000) {
+          newErrors.carbs = 'Carbs must be a number between 0 and 2,000';
+        }
+      }
+      if (fats !== '') {
+        const parsed = Number(fats);
+        if (isNaN(parsed) || parsed < 0 || parsed > 1000) {
+          newErrors.fats = 'Fats must be a number between 0 and 1,000';
+        }
+      }
+    } else if (activeFormTab === 'health') {
+      if (sleepHours !== '') {
+        const parsed = Number(sleepHours);
+        if (isNaN(parsed) || parsed < 0 || parsed > 24) {
+          newErrors.sleepHours = 'Sleep hours must be a number between 0 and 24';
+        }
+      }
+      if (steps !== '') {
+        const parsed = Number(steps);
+        if (isNaN(parsed) || !Number.isInteger(parsed) || parsed < 0 || parsed > 100000) {
+          newErrors.steps = 'Steps must be an integer between 0 and 100,000';
+        }
+      }
+      if (bodyWeight !== '') {
+        const parsed = Number(bodyWeight);
+        if (isNaN(parsed) || parsed < 20 || parsed > 500) {
+          newErrors.bodyWeight = 'Body weight must be between 20 and 500 kg';
+        }
+      }
+    }
+
+    if (notes && notes.length > 500) {
+      newErrors.notes = 'Notes cannot exceed 500 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateLog()) return;
+
     setSubmitting(true);
     try {
       const payload: any = {
-        date: new Date(data.date).toISOString(),
+        date: new Date(date).toISOString(),
         type: activeFormTab,
-        notes: data.notes || undefined,
+        notes: notes.trim() || undefined,
       };
 
       if (activeFormTab === 'workout') {
-        if (exerciseFields.length === 0) {
-          setToast({
-            message: 'Please add at least one exercise to your workout log.',
-            type: 'error',
-          });
-          setSubmitting(false);
-          return;
-        }
-        payload.exercises = data.exercises;
+        payload.exercises = exercises;
       } else if (activeFormTab === 'nutrition') {
-        payload.calories = data.calories;
-        payload.protein = data.protein;
-        payload.carbs = data.carbs;
-        payload.fats = data.fats;
+        if (calories !== '') payload.calories = Number(calories);
+        if (protein !== '') payload.protein = Number(protein);
+        if (carbs !== '') payload.carbs = Number(carbs);
+        if (fats !== '') payload.fats = Number(fats);
       } else if (activeFormTab === 'health') {
-        payload.sleepHours = data.sleepHours;
-        payload.steps = data.steps;
-        payload.bodyWeight = data.bodyWeight;
-        if (data.cardio && data.cardio.length > 0) {
-          payload.cardio = data.cardio;
+        if (sleepHours !== '') payload.sleepHours = Number(sleepHours);
+        if (steps !== '') payload.steps = Number(steps);
+        if (bodyWeight !== '') payload.bodyWeight = Number(bodyWeight);
+        if (cardio.length > 0) {
+          payload.cardio = cardio;
         }
       }
 
       const res = await api.post('/progress/log', payload);
       if (res.data.success) {
         setToast({ message: 'Log entry saved successfully!', type: 'success' });
-        reset({
-          date: getLocalDatetimeString(),
-          type: activeFormTab,
-          exercises: [],
-          cardio: [],
-          notes: '',
-        });
+        handleReset();
         queryClient.invalidateQueries({ queryKey: ['progressLogs'] });
       }
     } catch (err: any) {
@@ -204,7 +272,7 @@ export default function ProgressPage() {
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ marginBottom: '8px' }}>Progress & Logs</h1>
-            <p style={{ fontSize: '13px', color: '#8890a8' }}>
+            <p style={{ fontSize: '13px', color: '#9090a0' }}>
               Record your daily parameters and view metrics charts.
             </p>
           </div>
@@ -242,6 +310,7 @@ export default function ProgressPage() {
                     type="button"
                     onClick={() => {
                       setActiveFormTab(t);
+                      setErrors({});
                     }}
                     className={activeFormTab === t ? 'tab-item tab-item-active' : 'tab-item'}
                     style={{ textTransform: 'capitalize' }}
@@ -251,16 +320,19 @@ export default function ProgressPage() {
                 ))}
               </div>
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={onSubmit} className="space-y-6" noValidate>
                 {/* Date Input */}
                 <div>
-                  <label className="label">Date & Time</label>
+                  <label className="label" htmlFor="progress-date">Date & Time</label>
                   <input
+                    id="progress-date"
                     type="datetime-local"
-                    {...register('date')}
+                    value={date}
+                    onChange={(e) => { setDate(e.target.value); setErrors((prev) => ({ ...prev, date: '' })); }}
                     className={`input ${errors.date ? 'input-error' : ''}`}
+                    disabled={submitting}
                   />
-                  {errors.date && <p className="error-msg">{errors.date.message}</p>}
+                  {errors.date && <p className="error-msg">{errors.date}</p>}
                 </div>
 
                 {/* Workout Fields */}
@@ -269,31 +341,15 @@ export default function ProgressPage() {
                     <h4 className="text-sm font-bold text-mint mb-2">Workout Exercises</h4>
 
                     {/* Exercise List */}
-                    {exerciseFields.length > 0 && (
+                    {exercises.length > 0 && (
                       <div className="space-y-2 mb-4">
-                        {exerciseFields.map((field, i) => (
+                        {exercises.map((field, i) => (
                           <div
-                            key={field.id}
+                            key={i}
                             className="flex justify-between items-center bg-raised p-3 rounded-lg border border-border"
                           >
                             <div>
                               <span className="font-semibold text-sm text-text-primary">
-                                <input
-                                  type="hidden"
-                                  {...register(`exercises.${i}.name` as const)}
-                                />
-                                <input
-                                  type="hidden"
-                                  {...register(`exercises.${i}.sets` as const, { valueAsNumber: true })}
-                                />
-                                <input
-                                  type="hidden"
-                                  {...register(`exercises.${i}.reps` as const, { valueAsNumber: true })}
-                                />
-                                <input
-                                  type="hidden"
-                                  {...register(`exercises.${i}.weight` as const, { valueAsNumber: true })}
-                                />
                                 {field.name}
                               </span>
                               <span className="block text-[10px] text-text-muted mt-0.5">
@@ -315,40 +371,47 @@ export default function ProgressPage() {
                     {/* Add Exercise Panel */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface p-4 rounded-lg border border-border">
                       <div className="col-span-1 sm:col-span-2">
-                        <label className="label">Exercise Name</label>
+                        <label className="label" htmlFor="temp-ex-name">Exercise Name</label>
                         <input
+                          id="temp-ex-name"
                           type="text"
                           value={tempExercise.name}
                           onChange={(e) => setTempExercise({ ...tempExercise, name: e.target.value })}
                           className="input"
                           placeholder="e.g. Bench Press"
+                          disabled={submitting}
                         />
                       </div>
                       <div>
-                        <label className="label">Sets</label>
+                        <label className="label" htmlFor="temp-ex-sets">Sets</label>
                         <input
+                          id="temp-ex-sets"
                           type="number"
                           value={tempExercise.sets}
                           onChange={(e) =>
                             setTempExercise({ ...tempExercise, sets: parseInt(e.target.value) || 0 })
                           }
                           className="input font-mono"
+                          disabled={submitting}
                         />
                       </div>
                       <div>
-                        <label className="label">Reps</label>
+                        <label className="label" htmlFor="temp-ex-reps">Reps</label>
                         <input
+                          id="temp-ex-reps"
                           type="number"
                           value={tempExercise.reps}
                           onChange={(e) =>
                             setTempExercise({ ...tempExercise, reps: parseInt(e.target.value) || 0 })
                           }
                           className="input font-mono"
+                          disabled={submitting}
                         />
                       </div>
                       <div className="col-span-1 sm:col-span-2 pt-2">
-                        <label className="label">Weight (kg)</label>
+                        <label className="label" htmlFor="temp-ex-weight">Weight (kg)</label>
                         <input
+                          id="temp-ex-weight"
                           type="number"
                           step="0.5"
                           value={tempExercise.weight}
@@ -356,6 +419,7 @@ export default function ProgressPage() {
                             setTempExercise({ ...tempExercise, weight: parseFloat(e.target.value) || 0 })
                           }
                           className="input font-mono"
+                          disabled={submitting}
                         />
                       </div>
                       <div className="col-span-1 sm:col-span-2 pt-2">
@@ -364,6 +428,7 @@ export default function ProgressPage() {
                           onClick={addExerciseToList}
                           className="btn btn-ghost"
                           style={{ width: '100%' }}
+                          disabled={submitting}
                         >
                           + Add Exercise to List
                         </button>
@@ -376,44 +441,56 @@ export default function ProgressPage() {
                 {activeFormTab === 'nutrition' && (
                   <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
                     <div className="col-span-2">
-                      <label className="label">Calories (kcal)</label>
+                      <label className="label" htmlFor="progress-calories">Calories (kcal)</label>
                       <input
+                        id="progress-calories"
                         type="number"
-                        {...register('calories', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                        value={calories}
+                        onChange={(e) => { setCalories(e.target.value); setErrors((prev) => ({ ...prev, calories: '' })); }}
                         className={`input font-mono ${errors.calories ? 'input-error' : ''}`}
                         placeholder="e.g. 2100"
+                        disabled={submitting}
                       />
-                      {errors.calories && <p className="error-msg">{errors.calories.message}</p>}
+                      {errors.calories && <p className="error-msg">{errors.calories}</p>}
                     </div>
                     <div>
-                      <label className="label">Protein (g)</label>
+                      <label className="label" htmlFor="progress-protein">Protein (g)</label>
                       <input
+                        id="progress-protein"
                         type="number"
-                        {...register('protein', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                        value={protein}
+                        onChange={(e) => { setProtein(e.target.value); setErrors((prev) => ({ ...prev, protein: '' })); }}
                         className={`input font-mono ${errors.protein ? 'input-error' : ''}`}
                         placeholder="e.g. 140"
+                        disabled={submitting}
                       />
-                      {errors.protein && <p className="error-msg">{errors.protein.message}</p>}
+                      {errors.protein && <p className="error-msg">{errors.protein}</p>}
                     </div>
                     <div>
-                      <label className="label">Carbs (g)</label>
+                      <label className="label" htmlFor="progress-carbs">Carbs (g)</label>
                       <input
+                        id="progress-carbs"
                         type="number"
-                        {...register('carbs', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                        value={carbs}
+                        onChange={(e) => { setCarbs(e.target.value); setErrors((prev) => ({ ...prev, carbs: '' })); }}
                         className={`input font-mono ${errors.carbs ? 'input-error' : ''}`}
                         placeholder="e.g. 220"
+                        disabled={submitting}
                       />
-                      {errors.carbs && <p className="error-msg">{errors.carbs.message}</p>}
+                      {errors.carbs && <p className="error-msg">{errors.carbs}</p>}
                     </div>
                     <div>
-                      <label className="label">Fats (g)</label>
+                      <label className="label" htmlFor="progress-fats">Fats (g)</label>
                       <input
+                        id="progress-fats"
                         type="number"
-                        {...register('fats', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                        value={fats}
+                        onChange={(e) => { setFats(e.target.value); setErrors((prev) => ({ ...prev, fats: '' })); }}
                         className={`input font-mono ${errors.fats ? 'input-error' : ''}`}
                         placeholder="e.g. 70"
+                        disabled={submitting}
                       />
-                      {errors.fats && <p className="error-msg">{errors.fats.message}</p>}
+                      {errors.fats && <p className="error-msg">{errors.fats}</p>}
                     </div>
                   </div>
                 )}
@@ -423,39 +500,48 @@ export default function ProgressPage() {
                   <div className="space-y-6 border-t border-border pt-4">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="label">Sleep Hours</label>
+                        <label className="label" htmlFor="progress-sleep">Sleep Hours</label>
                         <input
+                          id="progress-sleep"
                           type="number"
                           step="0.5"
-                          {...register('sleepHours', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                          value={sleepHours}
+                          onChange={(e) => { setSleepHours(e.target.value); setErrors((prev) => ({ ...prev, sleepHours: '' })); }}
                           className={`input font-mono ${errors.sleepHours ? 'input-error' : ''}`}
                           placeholder="e.g. 7.5"
+                          disabled={submitting}
                         />
                         {errors.sleepHours && (
-                          <p className="error-msg">{errors.sleepHours.message}</p>
+                          <p className="error-msg">{errors.sleepHours}</p>
                         )}
                       </div>
                       <div>
-                        <label className="label">Daily Steps</label>
+                        <label className="label" htmlFor="progress-steps">Daily Steps</label>
                         <input
+                          id="progress-steps"
                           type="number"
-                          {...register('steps', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                          value={steps}
+                          onChange={(e) => { setSteps(e.target.value); setErrors((prev) => ({ ...prev, steps: '' })); }}
                           className={`input font-mono ${errors.steps ? 'input-error' : ''}`}
                           placeholder="e.g. 10000"
+                          disabled={submitting}
                         />
-                        {errors.steps && <p className="error-msg">{errors.steps.message}</p>}
+                        {errors.steps && <p className="error-msg">{errors.steps}</p>}
                       </div>
                       <div>
-                        <label className="label">Body Weight (kg)</label>
+                        <label className="label" htmlFor="progress-weight">Body Weight (kg)</label>
                         <input
+                          id="progress-weight"
                           type="number"
                           step="0.1"
-                          {...register('bodyWeight', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+                          value={bodyWeight}
+                          onChange={(e) => { setBodyWeight(e.target.value); setErrors((prev) => ({ ...prev, bodyWeight: '' })); }}
                           className={`input font-mono ${errors.bodyWeight ? 'input-error' : ''}`}
                           placeholder="e.g. 72.4"
+                          disabled={submitting}
                         />
                         {errors.bodyWeight && (
-                          <p className="error-msg">{errors.bodyWeight.message}</p>
+                          <p className="error-msg">{errors.bodyWeight}</p>
                         )}
                       </div>
                     </div>
@@ -465,25 +551,15 @@ export default function ProgressPage() {
                       <h5 className="text-sm font-bold text-fire uppercase tracking-wider">Cardio Activities</h5>
 
                       {/* Cardio List */}
-                      {cardioFields.length > 0 && (
+                      {cardio.length > 0 && (
                         <div className="space-y-2">
-                          {cardioFields.map((field, i) => (
+                          {cardio.map((field, i) => (
                             <div
-                              key={field.id}
+                              key={i}
                               className="flex justify-between items-center bg-raised p-3 rounded-lg border border-border"
                             >
                               <div>
                                 <span className="font-semibold text-sm text-text-primary">
-                                  <input
-                                    type="hidden"
-                                    {...register(`cardio.${i}.activity` as const)}
-                                  />
-                                  <input
-                                    type="hidden"
-                                    {...register(`cardio.${i}.durationMinutes` as const, {
-                                      valueAsNumber: true,
-                                    })}
-                                  />
                                   {field.activity}
                                 </span>
                                 <span className="block text-[10px] text-text-muted mt-0.5">
@@ -505,28 +581,32 @@ export default function ProgressPage() {
                       {/* Add Cardio Row */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-surface p-4 rounded-lg border border-border">
                         <div>
-                          <label className="label">
+                          <label className="label" htmlFor="temp-cardio-act">
                             Activity Name
                           </label>
                           <input
+                            id="temp-cardio-act"
                             type="text"
                             value={tempCardio.activity}
                             onChange={(e) => setTempCardio({ ...tempCardio, activity: e.target.value })}
                             className="input"
                             placeholder="e.g. Running"
+                            disabled={submitting}
                           />
                         </div>
                         <div>
-                          <label className="label">
+                          <label className="label" htmlFor="temp-cardio-dur">
                             Duration (minutes)
                           </label>
                           <input
+                            id="temp-cardio-dur"
                             type="number"
                             value={tempCardio.durationMinutes}
                             onChange={(e) =>
                               setTempCardio({ ...tempCardio, durationMinutes: parseInt(e.target.value) || 0 })
                             }
                             className="input font-mono"
+                            disabled={submitting}
                           />
                         </div>
                         <div className="col-span-1 sm:col-span-2 pt-2">
@@ -535,6 +615,7 @@ export default function ProgressPage() {
                             onClick={addCardioToList}
                             className="btn btn-ghost"
                             style={{ width: '100%' }}
+                            disabled={submitting}
                           >
                             + Add Cardio Activity
                           </button>
@@ -546,15 +627,18 @@ export default function ProgressPage() {
 
                 {/* Notes Textarea (Optional) */}
                 <div>
-                  <label className="label">Notes</label>
+                  <label className="label" htmlFor="progress-notes">Notes</label>
                   <textarea
-                    {...register('notes')}
+                    id="progress-notes"
+                    value={notes}
+                    onChange={(e) => { setNotes(e.target.value); setErrors((prev) => ({ ...prev, notes: '' })); }}
                     className={`input ${errors.notes ? 'input-error' : ''}`}
                     placeholder="Additional thoughts, feelings, or details..."
                     rows={2}
                     maxLength={500}
+                    disabled={submitting}
                   />
-                  {errors.notes && <p className="error-msg">{errors.notes.message}</p>}
+                  {errors.notes && <p className="error-msg">{errors.notes}</p>}
                 </div>
 
                 <div>
@@ -578,7 +662,7 @@ export default function ProgressPage() {
 
                 {isLoading ? (
                   <div className="flex justify-center py-20">
-                    <div className="spinner-lg"></div>
+                     <div className="spinner-lg"></div>
                   </div>
                 ) : error ? (
                   <div className="alert-danger text-center">

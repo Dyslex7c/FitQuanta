@@ -1,32 +1,44 @@
-const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const mongoose = require('mongoose');
 
-// Read .env.local
-const envPath = path.join(__dirname, '..', '.env.local');
-const envContent = fs.readFileSync(envPath, 'utf8');
-const lines = envContent.split('\n');
-let uri = '';
+async function testConnection() {
+  try {
+    const envPath = path.join(__dirname, '..', '.env.local');
+    if (!fs.existsSync(envPath)) {
+      console.log('Error: .env.local file not found');
+      return;
+    }
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    let uri = '';
+    envContent.split('\n').forEach(line => {
+      const parts = line.split('=');
+      if (parts[0] && parts[0].trim() === 'MONGODB_URI') {
+        uri = parts.slice(1).join('=').trim().replace(/^["']|["']$/g, '');
+      }
+    });
 
-for (const line of lines) {
-  if (line.startsWith('MONGODB_URI=')) {
-    uri = line.substring('MONGODB_URI='.length).trim();
+    if (!uri) {
+      console.log('Error: MONGODB_URI not found in .env.local');
+      return;
+    }
+
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(uri);
+    console.log('Connection successful!');
+
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    console.log('Available collections:', collections.map(c => c.name));
+
+    // Check users
+    const userCount = await mongoose.connection.db.collection('users').countDocuments();
+    console.log('Number of users:', userCount);
+
+    await mongoose.disconnect();
+    console.log('Disconnected.');
+  } catch (error) {
+    console.error('Error during test:', error);
   }
 }
 
-if (!uri) {
-  console.error('MONGODB_URI not found in .env.local');
-  process.exit(1);
-}
-
-console.log('Connecting to:', uri.replace(/:([^:@]+)@/, ':****@'));
-
-mongoose.connect(uri)
-  .then(() => {
-    console.log('Successfully connected to MongoDB!');
-    process.exit(0);
-  })
-  .catch((err) => {
-    console.error('Connection failed with error:', err);
-    process.exit(1);
-  });
+testConnection();

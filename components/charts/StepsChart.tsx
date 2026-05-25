@@ -8,15 +8,14 @@ interface StepsChartProps {
 }
 
 const C = {
-  cyan:    '#00d4ff',
-  fire:    '#ff6b2b',
-  emerald: '#1ed696',
-  moon:    '#7eb8e8',
-  amber:   '#f0a020',
-  chrome:  '#b8c4d4',
-  grid:    '#22223a',
-  axis:    '#545870',
-  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+  primary:  '#f07028',   /* orange */
+  gold:     '#e8a820',   /* golden yellow */
+  emerald:  '#1ed696',   /* keep green for success */
+  amber:    '#f5c832',   /* bright yellow for fats */
+  chrome:   '#b8c4d4',   /* silver for weight chart */
+  grid:     '#22223a',
+  axis:     '#545870',
+  tooltip:  { bg:'#13131e', border:'#2e2e4a', text:'#ffffff' },
 } as const;
 
 export default function StepsChart({ data }: StepsChartProps) {
@@ -58,10 +57,10 @@ export default function StepsChart({ data }: StepsChartProps) {
           />
           <ReferenceLine
             y={10000}
-            stroke={C.fire}
+            stroke={C.primary}
             strokeDasharray="5 3"
             strokeWidth={1}
-            label={{ value: 'Target: 10k', fill: C.fire, fontSize: 9, position: 'top' }}
+            label={{ value: 'Target: 10k', fill: C.primary, fontSize: 9, position: 'top' }}
           />
           <Bar dataKey="steps" name="Steps" fill={C.emerald} radius={[3, 3, 0, 0]} />
         </BarChart>

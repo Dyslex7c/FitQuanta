@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
 import QueryProvider from "@/components/QueryProvider";
 import Navbar from "@/components/Navbar";
+import ChatBot from "@/components/ChatBot/ChatBot";
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -42,6 +43,7 @@ export default function RootLayout({
           <QueryProvider>
             <Navbar />
             <main className="flex-grow flex flex-col">{children}</main>
+            <ChatBot />
           </QueryProvider>
         </ReduxProvider>
       </body>

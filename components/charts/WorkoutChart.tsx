@@ -9,15 +9,14 @@ interface WorkoutChartProps {
 }
 
 const C = {
-  cyan:    '#00d4ff',
-  fire:    '#ff6b2b',
-  emerald: '#1ed696',
-  moon:    '#7eb8e8',
-  amber:   '#f0a020',
-  chrome:  '#b8c4d4',
-  grid:    '#22223a',
-  axis:    '#545870',
-  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+  primary:  '#f07028',   /* orange */
+  gold:     '#e8a820',   /* golden yellow */
+  emerald:  '#1ed696',   /* keep green for success */
+  amber:    '#f5c832',   /* bright yellow for fats */
+  chrome:   '#b8c4d4',   /* silver for weight chart */
+  grid:     '#22223a',
+  axis:     '#545870',
+  tooltip:  { bg:'#13131e', border:'#2e2e4a', text:'#ffffff' },
 } as const;
 
 export default function WorkoutChart({ logs }: WorkoutChartProps) {
@@ -74,7 +73,7 @@ export default function WorkoutChart({ logs }: WorkoutChartProps) {
         <select
           value={selectedExercise}
           onChange={(e) => setSelectedExercise(e.target.value)}
-          className="bg-raised border border-border text-text-primary text-xs rounded-md px-2 py-1 focus:ring-1 focus:ring-cyan/60 focus:outline-none max-w-[150px] truncate"
+          className="bg-raised border border-border text-text-primary text-xs rounded-md px-2 py-1 focus:ring-1 focus:ring-orange/60 focus:outline-none max-w-[150px] truncate"
         >
           {uniqueExercises.map((ex) => (
             <option key={ex} value={ex}>
@@ -103,10 +102,10 @@ export default function WorkoutChart({ logs }: WorkoutChartProps) {
             type="monotone"
             dataKey="volume"
             name="Volume (kg)"
-            stroke={C.cyan}
+            stroke={C.primary}
             strokeWidth={2}
             dot={false}
-            activeDot={{ r: 5, fill: C.cyan }}
+            activeDot={{ r: 5, fill: C.primary }}
           />
         </LineChart>
       </ResponsiveContainer>

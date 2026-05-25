@@ -8,15 +8,14 @@ interface SleepChartProps {
 }
 
 const C = {
-  cyan:    '#00d4ff',
-  fire:    '#ff6b2b',
-  emerald: '#1ed696',
-  moon:    '#7eb8e8',
-  amber:   '#f0a020',
-  chrome:  '#b8c4d4',
-  grid:    '#22223a',
-  axis:    '#545870',
-  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+  primary:  '#f07028',   /* orange */
+  gold:     '#e8a820',   /* golden yellow */
+  emerald:  '#1ed696',   /* keep green for success */
+  amber:    '#f5c832',   /* bright yellow for fats */
+  chrome:   '#b8c4d4',   /* silver for weight chart */
+  grid:     '#22223a',
+  axis:     '#545870',
+  tooltip:  { bg:'#13131e', border:'#2e2e4a', text:'#ffffff' },
 } as const;
 
 export default function SleepChart({ data }: SleepChartProps) {
@@ -58,12 +57,12 @@ export default function SleepChart({ data }: SleepChartProps) {
           />
           <ReferenceLine
             y={8}
-            stroke={C.fire}
+            stroke={C.primary}
             strokeDasharray="5 3"
             strokeWidth={1}
-            label={{ value: 'Ideal: 8h', fill: C.fire, fontSize: 9, position: 'top' }}
+            label={{ value: 'Ideal: 8h', fill: C.primary, fontSize: 9, position: 'top' }}
           />
-          <Bar dataKey="hours" name="Sleep Hours" fill={C.moon} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="hours" name="Sleep Hours" fill={C.gold} radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

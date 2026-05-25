@@ -8,15 +8,14 @@ interface NutritionChartProps {
 }
 
 const C = {
-  cyan:    '#00d4ff',
-  fire:    '#ff6b2b',
-  emerald: '#1ed696',
-  moon:    '#7eb8e8',
-  amber:   '#f0a020',
-  chrome:  '#b8c4d4',
-  grid:    '#22223a',
-  axis:    '#545870',
-  tooltip: { bg:'#13131e', border:'#2e2e4a', text:'#eceef4' },
+  primary:  '#f07028',   /* orange */
+  gold:     '#e8a820',   /* golden yellow */
+  emerald:  '#1ed696',   /* keep green for success */
+  amber:    '#f5c832',   /* bright yellow for fats */
+  chrome:   '#b8c4d4',   /* silver for weight chart */
+  grid:     '#22223a',
+  axis:     '#545870',
+  tooltip:  { bg:'#13131e', border:'#2e2e4a', text:'#ffffff' },
 } as const;
 
 export default function NutritionChart({ data }: NutritionChartProps) {
@@ -57,8 +56,8 @@ export default function NutritionChart({ data }: NutritionChartProps) {
             cursor={{ stroke: C.grid }}
           />
           <Legend wrapperStyle={{ fontSize: '12px', color: C.axis }} />
-          <Bar dataKey="protein" name="Protein" fill={C.cyan} radius={[3, 3, 0, 0]} />
-          <Bar dataKey="carbs" name="Carbs" fill={C.fire} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="protein" name="Protein" fill={C.gold} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="carbs" name="Carbs" fill={C.primary} radius={[3, 3, 0, 0]} />
           <Bar dataKey="fats" name="Fats" fill={C.amber} radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

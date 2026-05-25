@@ -1,84 +1,139 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { onboardingSchema, OnboardingInput } from '@/schemas/onboardingSchema';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCredentials } from '@/redux/slices/authSlice';
 import { RootState } from '@/redux/store';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import api from '@/lib/axiosInstance';
 
 export default function OnboardingForm() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { token } = useSelector((state: RootState) => state.auth);
+  
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Form Fields State
+  const [age, setAge] = useState<string>('');
+  const [gender, setGender] = useState<string>('male');
+  const [height, setHeight] = useState<string>('');
+  const [weight, setWeight] = useState<string>('');
+  const [country, setCountry] = useState<string>('');
+
+  const [activityLevel, setActivityLevel] = useState<string>('sedentary');
+  const [fitnessLevel, setFitnessLevel] = useState<string>('beginner');
+  const [fitnessGoal, setFitnessGoal] = useState<string>('fat_loss');
+  const [equipment, setEquipment] = useState<string>('none');
+
+  const [dietPreference, setDietPreference] = useState<string>('veg');
+  const [budget, setBudget] = useState<string>('low');
 
   const [foodAllergiesInput, setFoodAllergiesInput] = useState('');
   const [medicalConditionsInput, setMedicalConditionsInput] = useState('');
   const [injuriesInput, setInjuriesInput] = useState('');
 
-  const {
-    register,
-    handleSubmit,
-    trigger,
-    formState: { errors },
-  } = useForm<any>({
-    resolver: zodResolver(onboardingSchema),
-    defaultValues: {
-      gender: 'male',
-      activityLevel: 'sedentary',
-      fitnessLevel: 'beginner',
-      fitnessGoal: 'fat_loss',
-      equipment: 'none',
-      dietPreference: 'veg',
-      budget: 'low',
-      foodAllergies: [],
-      medicalConditions: [],
-      injuries: [],
-    },
-  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const nextStep = async () => {
-    if (step >= 4) return; // Don't go beyond step 4
-    let fieldsToValidate: Array<keyof OnboardingInput> = [];
-    if (step === 1) {
-      fieldsToValidate = ['age', 'gender', 'height', 'weight', 'country'];
-    } else if (step === 2) {
-      fieldsToValidate = ['activityLevel', 'fitnessLevel', 'fitnessGoal', 'equipment'];
-    } else if (step === 3) {
-      fieldsToValidate = ['dietPreference', 'budget'];
+  const validateStep = (currentStep: number): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (currentStep === 1) {
+      const parsedAge = parseInt(age, 10);
+      if (!age.trim()) {
+        newErrors.age = 'Age is required';
+      } else if (isNaN(parsedAge) || parsedAge < 13 || parsedAge > 100) {
+        newErrors.age = 'Age must be a number between 13 and 100';
+      }
+
+      if (!gender) {
+        newErrors.gender = 'Gender is required';
+      } else if (!['male', 'female', 'other'].includes(gender)) {
+        newErrors.gender = 'Invalid gender value';
+      }
+
+      const parsedHeight = parseFloat(height);
+      if (!height.trim()) {
+        newErrors.height = 'Height is required';
+      } else if (isNaN(parsedHeight) || parsedHeight < 50 || parsedHeight > 300) {
+        newErrors.height = 'Height must be between 50 and 300 cm';
+      }
+
+      const parsedWeight = parseFloat(weight);
+      if (!weight.trim()) {
+        newErrors.weight = 'Weight is required';
+      } else if (isNaN(parsedWeight) || parsedWeight < 20 || parsedWeight > 500) {
+        newErrors.weight = 'Weight must be between 20 and 500 kg';
+      }
+
+      if (!country.trim()) {
+        newErrors.country = 'Country is required';
+      } else if (country.trim().length < 2 || country.trim().length > 100) {
+        newErrors.country = 'Country must be between 2 and 100 characters';
+      }
+    } else if (currentStep === 2) {
+      if (!['sedentary', 'light', 'moderate', 'active', 'very_active'].includes(activityLevel)) {
+        newErrors.activityLevel = 'Invalid activity level selected';
+      }
+      if (!['beginner', 'intermediate', 'advanced'].includes(fitnessLevel)) {
+        newErrors.fitnessLevel = 'Invalid fitness level selected';
+      }
+      if (!['fat_loss', 'muscle_gain', 'maintenance'].includes(fitnessGoal)) {
+        newErrors.fitnessGoal = 'Invalid fitness goal selected';
+      }
+      if (!['none', 'home', 'gym'].includes(equipment)) {
+        newErrors.equipment = 'Invalid equipment option selected';
+      }
+    } else if (currentStep === 3) {
+      if (!['veg', 'non-veg', 'vegan'].includes(dietPreference)) {
+        newErrors.dietPreference = 'Invalid diet preference selected';
+      }
+      if (!['low', 'medium', 'high'].includes(budget)) {
+        newErrors.budget = 'Invalid budget level selected';
+      }
     }
 
-    const isValid = await trigger(fieldsToValidate);
-    if (isValid) {
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (step >= 4) return;
+    if (validateStep(step)) {
       setStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
-  // Guard: block form submission on steps 1-3 (e.g. when user presses Enter in a text input)
-  const guardedSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (step < 4) {
-      e.preventDefault();
+  const prevStep = () => {
+    setStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Ensure all steps are valid
+    if (!validateStep(1) || !validateStep(2) || !validateStep(3)) {
+      setErrorMsg('Please go back and correct validation errors in previous steps.');
       return;
     }
-    handleSubmit(onSubmit)(e);
-  };
 
-  const prevStep = () => {
-    setStep((prev) => prev - 1);
-  };
-
-  const onSubmit = async (data: any) => {
     setLoading(true);
     setErrorMsg(null);
     try {
       const finalData = {
-        ...data,
+        age: parseInt(age, 10),
+        gender,
+        height: parseFloat(height),
+        weight: parseFloat(weight),
+        country: country.trim(),
+        activityLevel,
+        fitnessLevel,
+        fitnessGoal,
+        dietPreference,
+        budget,
+        equipment,
         foodAllergies: foodAllergiesInput
           .split(',')
           .map((s) => s.trim())
@@ -94,10 +149,10 @@ export default function OnboardingForm() {
         onboardingComplete: true,
       };
 
-      const profileRes = await axios.put('/api/profile', finalData);
+      const profileRes = await api.put('/profile', finalData);
       if (profileRes.data.success) {
-        await axios.post('/api/bmi');
-        const freshProfileRes = await axios.get('/api/profile');
+        await api.post('/bmi');
+        const freshProfileRes = await api.get('/profile');
         if (freshProfileRes.data.success && token) {
           dispatch(setCredentials({ token, user: freshProfileRes.data.data }));
           router.push('/dashboard');
@@ -133,14 +188,21 @@ export default function OnboardingForm() {
       )}
 
       <form
-        onSubmit={guardedSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (step === 4) {
+            handleSubmit(e);
+          } else {
+            nextStep();
+          }
+        }}
         onKeyDown={(e) => {
-          // Block Enter key from submitting the form on steps 1-3
           if (e.key === 'Enter' && step < 4) {
             e.preventDefault();
           }
         }}
         className="space-y-6"
+        noValidate
       >
         {/* Step 1: Basic info */}
         {step === 1 && (
@@ -148,57 +210,72 @@ export default function OnboardingForm() {
             <h3 className="section-title-cyan mb-4">Step 1: Personal Info</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="label">Age</label>
+                <label className="label" htmlFor="onboard-age">Age</label>
                 <input
+                  id="onboard-age"
                   type="number"
-                  {...register('age', { valueAsNumber: true })}
+                  value={age}
+                  onChange={(e) => { setAge(e.target.value); setErrors((p) => ({ ...p, age: '' })); }}
                   className={`input ${errors.age ? 'input-error' : ''}`}
                   placeholder="e.g. 25"
+                  disabled={loading}
                 />
-                {errors.age && <p className="error-msg">{errors.age.message as any}</p>}
+                {errors.age && <p className="error-msg">{errors.age}</p>}
               </div>
               <div>
-                <label className="label">Gender</label>
+                <label className="label" htmlFor="onboard-gender">Gender</label>
                 <select
-                  {...register('gender')}
+                  id="onboard-gender"
+                  value={gender}
+                  onChange={(e) => { setGender(e.target.value); setErrors((p) => ({ ...p, gender: '' })); }}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
-                {errors.gender && <p className="error-msg">{errors.gender.message as any}</p>}
+                {errors.gender && <p className="error-msg">{errors.gender}</p>}
               </div>
               <div>
-                <label className="label">Height (cm)</label>
+                <label className="label" htmlFor="onboard-height">Height (cm)</label>
                 <input
+                  id="onboard-height"
                   type="number"
-                  {...register('height', { valueAsNumber: true })}
+                  value={height}
+                  onChange={(e) => { setHeight(e.target.value); setErrors((p) => ({ ...p, height: '' })); }}
                   className={`input ${errors.height ? 'input-error' : ''}`}
                   placeholder="e.g. 175"
+                  disabled={loading}
                 />
-                {errors.height && <p className="error-msg">{errors.height.message as any}</p>}
+                {errors.height && <p className="error-msg">{errors.height}</p>}
               </div>
               <div>
-                <label className="label">Weight (kg)</label>
+                <label className="label" htmlFor="onboard-weight">Weight (kg)</label>
                 <input
+                  id="onboard-weight"
                   type="number"
-                  {...register('weight', { valueAsNumber: true })}
+                  value={weight}
+                  onChange={(e) => { setWeight(e.target.value); setErrors((p) => ({ ...p, weight: '' })); }}
                   className={`input ${errors.weight ? 'input-error' : ''}`}
                   placeholder="e.g. 70"
+                  disabled={loading}
                 />
-                {errors.weight && <p className="error-msg">{errors.weight.message as any}</p>}
+                {errors.weight && <p className="error-msg">{errors.weight}</p>}
               </div>
             </div>
             <div>
-              <label className="label">Country</label>
+              <label className="label" htmlFor="onboard-country">Country</label>
               <input
+                id="onboard-country"
                 type="text"
-                {...register('country')}
+                value={country}
+                onChange={(e) => { setCountry(e.target.value); setErrors((p) => ({ ...p, country: '' })); }}
                 className={`input ${errors.country ? 'input-error' : ''}`}
                 placeholder="e.g. United States"
+                disabled={loading}
               />
-              {errors.country && <p className="error-msg">{errors.country.message as any}</p>}
+              {errors.country && <p className="error-msg">{errors.country}</p>}
             </div>
           </div>
         )}
@@ -209,10 +286,13 @@ export default function OnboardingForm() {
             <h3 className="section-title-cyan mb-4">Step 2: Fitness Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="label">Activity Level</label>
+                <label className="label" htmlFor="onboard-activity">Activity Level</label>
                 <select
-                  {...register('activityLevel')}
+                  id="onboard-activity"
+                  value={activityLevel}
+                  onChange={(e) => setActivityLevel(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="sedentary">Sedentary (Little/no exercise)</option>
                   <option value="light">Lightly Active (1-3 days/week)</option>
@@ -222,10 +302,13 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="label">Fitness Level</label>
+                <label className="label" htmlFor="onboard-fitness-level">Fitness Level</label>
                 <select
-                  {...register('fitnessLevel')}
+                  id="onboard-fitness-level"
+                  value={fitnessLevel}
+                  onChange={(e) => setFitnessLevel(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -233,10 +316,13 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="label">Fitness Goal</label>
+                <label className="label" htmlFor="onboard-fitness-goal">Fitness Goal</label>
                 <select
-                  {...register('fitnessGoal')}
+                  id="onboard-fitness-goal"
+                  value={fitnessGoal}
+                  onChange={(e) => setFitnessGoal(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="fat_loss">Fat Loss</option>
                   <option value="muscle_gain">Muscle Gain</option>
@@ -244,10 +330,13 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="label">Available Equipment</label>
+                <label className="label" htmlFor="onboard-equipment">Available Equipment</label>
                 <select
-                  {...register('equipment')}
+                  id="onboard-equipment"
+                  value={equipment}
+                  onChange={(e) => setEquipment(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="none">None (Bodyweight only)</option>
                   <option value="home">Home Gym (Dumbbells/bands)</option>
@@ -264,10 +353,13 @@ export default function OnboardingForm() {
             <h3 className="section-title-cyan mb-4">Step 3: Dietary Preference</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="label">Diet Preference</label>
+                <label className="label" htmlFor="onboard-diet">Diet Preference</label>
                 <select
-                  {...register('dietPreference')}
+                  id="onboard-diet"
+                  value={dietPreference}
+                  onChange={(e) => setDietPreference(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="veg">Vegetarian</option>
                   <option value="non-veg">Non-Vegetarian</option>
@@ -275,10 +367,13 @@ export default function OnboardingForm() {
                 </select>
               </div>
               <div>
-                <label className="label">Budget Level</label>
+                <label className="label" htmlFor="onboard-budget">Budget Level</label>
                 <select
-                  {...register('budget')}
+                  id="onboard-budget"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
                   className="input"
+                  disabled={loading}
                 >
                   <option value="low">Low Budget</option>
                   <option value="medium">Medium Budget</option>
@@ -287,13 +382,15 @@ export default function OnboardingForm() {
               </div>
             </div>
             <div>
-              <label className="label">Food Allergies (comma separated)</label>
+              <label className="label" htmlFor="onboard-allergies">Food Allergies (comma separated)</label>
               <input
+                id="onboard-allergies"
                 type="text"
                 value={foodAllergiesInput}
                 onChange={(e) => setFoodAllergiesInput(e.target.value)}
                 className="input"
                 placeholder="e.g. peanuts, dairy, gluten"
+                disabled={loading}
               />
             </div>
           </div>
@@ -315,23 +412,27 @@ export default function OnboardingForm() {
             </div>
 
             <div>
-              <label className="label">Medical Conditions (comma separated)</label>
+              <label className="label" htmlFor="onboard-conditions">Medical Conditions (comma separated)</label>
               <input
+                id="onboard-conditions"
                 type="text"
                 value={medicalConditionsInput}
                 onChange={(e) => setMedicalConditionsInput(e.target.value)}
                 className="input"
                 placeholder="e.g. asthma, diabetes"
+                disabled={loading}
               />
             </div>
             <div>
-              <label className="label">Injuries (comma separated)</label>
+              <label className="label" htmlFor="onboard-injuries">Injuries (comma separated)</label>
               <input
+                id="onboard-injuries"
                 type="text"
                 value={injuriesInput}
                 onChange={(e) => setInjuriesInput(e.target.value)}
                 className="input"
                 placeholder="e.g. knee pain, lower back strain"
+                disabled={loading}
               />
             </div>
           </div>
@@ -344,6 +445,7 @@ export default function OnboardingForm() {
               type="button"
               onClick={prevStep}
               className="btn btn-ghost btn-sm"
+              disabled={loading}
             >
               Previous
             </button>
@@ -356,14 +458,14 @@ export default function OnboardingForm() {
               type="button"
               onClick={nextStep}
               className="btn btn-primary btn-sm"
+              disabled={loading}
             >
               Next Step
             </button>
           ) : (
             <button
-              type="button"
+              type="submit"
               disabled={loading}
-              onClick={() => handleSubmit(onSubmit)()}
               className="btn btn-primary btn-sm"
             >
               {loading ? 'Submitting...' : 'Finish Setup'}
