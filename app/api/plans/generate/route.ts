@@ -75,7 +75,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // 8. Build Groq prompt
     let userPrompt = `
-You are generating a fitness plan for the following user profile:
+You are generating a highly personalized fitness and nutrition plan for the following user profile:
 [USER PROFILE START]
 Age: ${s(String(user.age ?? 'unknown'))}
 Gender: ${s(user.gender ?? 'unknown')}
@@ -90,12 +90,14 @@ Budget: ${s(user.budget ?? 'medium')}
 Food Allergies: ${allergies}
 [USER PROFILE END]
 
+Every plan must be strictly and highly personalized according to the user's specific information (age, gender, BMI, fitness level, activity level, fitness goal, available equipment, country, diet preference, budget, and food allergies). Do not provide generic workouts or meals.
+
 Return ONLY a single valid JSON object. No markdown. No code blocks. No explanation text. No trailing commas. The JSON must have exactly two keys:
 
-"workoutPlan": an array of exactly 7 objects, each with:
+"workoutPlan": an array of exactly 7 objects, each representing a day. Rest days should have an empty "exercises" array. For each active training day, you MUST generate a minimum of 7 exercises and a maximum of 10 exercises. The split structure must be dynamically selected to fit the user's level (choose from: Bro Split, Upper/Lower Body, Push/Pull, Full Body, or Double Body split styles). Each day object has:
   - "day": string (e.g. "Day 1 - Monday")
-  - "focus": string (e.g. "Chest & Triceps")
-  - "exercises": array of objects each with "name" (string), "sets" (number), "reps" (string), "rest" (string), "notes" (string)
+  - "focus": string (e.g. "Chest & Triceps" or "Rest Day")
+  - "exercises": array of objects (exactly 7 to 10 exercises for active days; empty array [] for rest days) each with "name" (string), "sets" (number), "reps" (string), "rest" (string), "notes" (string)
 
 "dietPlan": an array of exactly 7 objects, each with:
   - "day": string (e.g. "Day 1 - Monday")

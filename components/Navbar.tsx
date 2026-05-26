@@ -28,6 +28,7 @@ export default function Navbar() {
 
   const links = showAuthLinks ? [
     { label: 'Dashboard', href: '/dashboard' },
+    { label: 'Exercise Library', href: '/exercises' },
     { label: 'My Plan', href: '/plans' },
     { label: 'Progress', href: '/progress' },
     ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])

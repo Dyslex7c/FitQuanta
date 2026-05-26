@@ -26,6 +26,7 @@ export interface IUserDocument extends Document {
   bmi?: number;
   bmiCategory?: BMICategory;
   onboardingComplete: boolean;
+  favoriteExercises?: string[];
 }
 
 const UserSchema = new Schema<IUserDocument>(
@@ -51,6 +52,7 @@ const UserSchema = new Schema<IUserDocument>(
     bmi: { type: Number },
     bmiCategory: { type: String, enum: ['Underweight', 'Normal', 'Overweight', 'Obese'] },
     onboardingComplete: { type: Boolean, default: false },
+    favoriteExercises: { type: [String], default: [] },
   },
   { timestamps: true }
 );
