@@ -5,6 +5,7 @@ import User from '@/models/User';
 import Trainer from '@/models/Trainer';
 import Notification from '@/models/Notification';
 import { trainerRegisterSchema } from '@/schemas/trainerRegisterSchema';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import { rateLimit } from '@/lib/rateLimit';
 import type { ApiResponse } from '@/types/api';
 
@@ -20,7 +21,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
       return NextResponse.json({ success: false, message: 'Invalid input' }, { status: 400 });
     }
 
-    const { email, password, name, ...trainerFields } = parsed.data;
+    const { email, password, name, turnstileToken, ...trainerFields } = parsed.data;
+
+    /* Verify Turnstile CAPTCHA token */
+    const turnstile = await verifyTurnstileToken(turnstileToken, ip);
+    if (!turnstile.success) {
+      return NextResponse.json({ success: false, message: 'CAPTCHA verification failed. Please try again.' }, { status: 400 });
+    }
+
     await connectDB();
 
     const existing = await User.findOne({ email });

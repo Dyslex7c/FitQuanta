@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { signToken, handleApiError } from '@/lib/auth';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 import { registerSchema } from '@/schemas/registerSchema';
 import { rateLimit } from '@/lib/rateLimit';
 import type { ApiResponse } from '@/types/api';
@@ -18,7 +19,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid input' }, { status: 400 });
     }
-    const { name, email, password } = parsed.data;
+    const { name, email, password, turnstileToken } = parsed.data;
+
+    /* Verify Turnstile CAPTCHA token */
+    const turnstile = await verifyTurnstileToken(turnstileToken, ip);
+    if (!turnstile.success) {
+      return NextResponse.json({ success: false, message: 'CAPTCHA verification failed. Please try again.' }, { status: 400 });
+    }
+
     await connectDB();
     const existing = await User.findOne({ email });
     if (existing) {

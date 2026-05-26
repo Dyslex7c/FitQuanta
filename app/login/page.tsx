@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { setCredentials } from '@/redux/slices/authSlice';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import Toast from '@/components/Toast';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
 function validateLogin(email: string, password: string) {
   const errors: Record<string, string> = {};
@@ -30,6 +31,8 @@ export default function LoginPage() {
   const [loading,     setLoading]     = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [loginMode,   setLoginMode]   = useState<'client' | 'trainer'>('client');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const getRedirectPath = (u: any) => {
     if (u.role === 'admin') return '/admin';
@@ -58,6 +61,7 @@ export default function LoginPage() {
         email:    email.trim().toLowerCase(),
         password,
         role:     loginMode,
+        turnstileToken: captchaToken,
       });
 
       if (res.data.success) {
@@ -73,6 +77,9 @@ export default function LoginPage() {
       } else {
         setToast({ message: err.response?.data?.message || 'Login failed. Please try again.', type: 'error' });
       }
+      /* Reset CAPTCHA widget on any error so user gets a fresh token */
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -178,10 +185,21 @@ export default function LoginPage() {
               {errors.password && <p className="error-msg">{errors.password}</p>}
             </div>
 
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: 'dark', size: 'flexible' }}
+              />
+            </div>
+
             <button
               id="login-submit"
               type="submit"
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className="btn btn-primary"
               style={{ width: '100%', marginTop: '4px' }}
             >

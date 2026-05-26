@@ -18,6 +18,7 @@ export const trainerRegisterSchema = z.object({
     'weight_loss','muscle_gain','strength','cardio',
     'yoga','hiit','rehabilitation','sports','nutrition'
   ])).min(1).max(9),
+  turnstileToken:    z.string().min(1, 'CAPTCHA verification is required'),
 });
 
 export type TrainerRegisterInput = z.infer<typeof trainerRegisterSchema>;

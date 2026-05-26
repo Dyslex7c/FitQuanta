@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
 import Toast from '@/components/Toast';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
 export default function TrainerRegisterPage() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function TrainerRegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   const availableSpecs = [
     { value: 'weight_loss', label: 'Weight Loss' },
@@ -106,6 +109,7 @@ export default function TrainerRegisterPage() {
       yearsOfExperience: Number(yearsOfExperience),
       clientsTrained: Number(clientsTrained),
       specializations,
+      turnstileToken: captchaToken,
     };
 
     try {
@@ -125,6 +129,9 @@ export default function TrainerRegisterPage() {
         message: err.response?.data?.message || 'Onboarding failed. Please try again.',
         type: 'error',
       });
+      /* Reset CAPTCHA widget on any error so user gets a fresh token */
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -365,10 +372,22 @@ export default function TrainerRegisterPage() {
               {errors.specializations && <p className="error-msg" style={{ marginTop: '8px' }}>{errors.specializations}</p>}
             </div>
 
+            {/* CAPTCHA Widget */}
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: 'dark', size: 'flexible' }}
+              />
+            </div>
+
             {/* Form actions */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !captchaToken}
               className="btn btn-primary"
               style={{ width: '100%', padding: '12px', fontWeight: 600, fontSize: '13px', marginTop: '10px' }}
             >

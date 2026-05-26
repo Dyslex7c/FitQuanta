@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
-@layer base {
   *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -70,9 +69,8 @@
     outline-offset: 3px;
     border-radius: 4px;
   }
-}
 
-@layer components {
+
 
   /* ─────────────────────────────────────────────────
      LAYOUT
@@ -83,13 +81,13 @@
 
   /* Grid bg — only on hero sections */
   .bg-void-grid {
-    background-image: theme('backgroundImage.grid-void');
-    background-size: theme('backgroundSize.grid');
+    background-image: var(--background-image-grid-void);
+    background-size: var(--background-size-grid);
   }
 
   /* Moon radial — faint cold glow, only on hero */
   .bg-moon-radial {
-    background-image: theme('backgroundImage.gold-radial');
+    background-image: var(--background-image-gold-radial);
   }
 
   /* ─────────────────────────────────────────────────
@@ -540,7 +538,7 @@
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
-}
+
 
 /* ── ChatBot animations (must live in global CSS, not JSX style tags) ── */
 @keyframes chatMsgIn   { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }

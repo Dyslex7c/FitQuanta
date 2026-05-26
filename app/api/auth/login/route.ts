@@ -7,6 +7,7 @@ import { loginSchema } from '@/schemas/loginSchema';
 import { rateLimit } from '@/lib/rateLimit';
 import type { ApiResponse } from '@/types/api';
 import type { IUserProfile } from '@/types/user';
+import { verifyTurnstileToken } from '@/lib/turnstile';
 
 export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{ token: string; user: IUserProfile }>>> {
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
@@ -19,7 +20,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid input' }, { status: 400 });
     }
-    const { email, password, role } = parsed.data;
+    const { email, password, role, turnstileToken } = parsed.data;
+    /* Verify Turnstile CAPTCHA token */
+    const turnstile = await verifyTurnstileToken(turnstileToken, ip);
+    if (!turnstile.success) {
+      return NextResponse.json({ success: false, message: 'CAPTCHA verification failed. Please try again.' }, { status: 400 });
+    }
     await connectDB();
     const user = await User.findOne({ email }).select('+password');
     if (!user) {

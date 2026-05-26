@@ -17,6 +17,7 @@ export const registerSchema = z.object({
     .max(128, 'Password is too long')
     .regex(/[0-9]/, 'Password must contain at least one number')
     .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character (e.g. @, #, !)'),
+  turnstileToken: z.string().min(1, 'CAPTCHA verification is required'),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
