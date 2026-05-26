@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { logout } from '@/redux/slices/authSlice';
+import api from '@/lib/axiosInstance';
 
 export default function Navbar() {
   const router = useRouter();
@@ -15,9 +16,18 @@ export default function Navbar() {
   const [mounted, setMounted] = React.useState(false);
 
 
+  const [unseenBadges, setUnseenBadges] = React.useState(0);
+
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (!mounted || !isAuthenticated) return;
+    api.get('/achievements/my')
+      .then(r => setUnseenBadges(r.data.data.unseenCount))
+      .catch(() => {});
+  }, [mounted, isAuthenticated]);
 
   const showAuthLinks = mounted && isAuthenticated && user;
 
@@ -44,6 +54,7 @@ export default function Navbar() {
           { label: 'Exercise Library', href: '/exercises' },
           { label: 'My Plan', href: '/plans' },
           { label: 'Progress', href: '/progress' },
+          { label: 'Badges', href: '/badges' },
           { label: 'Chat', href: '/chat' },
           { label: 'Purchases', href: '/purchases' },
           ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])
@@ -107,6 +118,7 @@ export default function Navbar() {
                         padding: '6px 12px',
                         fontSize: '13px',
                         fontWeight: 500,
+                        position: 'relative',
                       }
                     : {
                         color: link.isWarning ? '#f07028' : '#9090a0',
@@ -115,6 +127,7 @@ export default function Navbar() {
                         fontSize: '13px',
                         fontWeight: 500,
                         transition: 'all 0.15s',
+                        position: 'relative',
                       }
                 }
                 onMouseEnter={(e) => {
@@ -133,6 +146,23 @@ export default function Navbar() {
                 }}
               >
                 {link.label}
+                {link.href === '/badges' && unseenBadges > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-2px', right: '-4px',
+                    width: '14px', height: '14px',
+                    background: '#f07028',
+                    borderRadius: '50%',
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    {unseenBadges > 9 ? '9+' : unseenBadges}
+                  </span>
+                )}
               </Link>
             );
           })}

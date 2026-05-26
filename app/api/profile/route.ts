@@ -3,6 +3,7 @@ import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import { verifyAuth, handleApiError, sanitizeObject } from '@/lib/auth';
 import { profileSchema } from '@/schemas/profileSchema';
+import { runAchievementEngine } from '@/lib/achievementEngine';
 import type { ApiResponse } from '@/types/api';
 import type { IUserProfile } from '@/types/user';
 
@@ -38,6 +39,10 @@ export async function PUT(req: NextRequest): Promise<NextResponse<ApiResponse<IU
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
+
+    /* Trigger achievements check asynchronously */
+    void runAchievementEngine(userId);
+
     return NextResponse.json({ success: true, data: user.toObject() as unknown as IUserProfile });
   } catch (error: unknown) {
     return handleApiError(error);

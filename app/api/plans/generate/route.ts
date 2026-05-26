@@ -5,6 +5,7 @@ import Plan from '@/models/Plan';
 import { groq } from '@/lib/groq';
 import { verifyAuth, sanitizeForPrompt } from '@/lib/auth';
 import { rateLimit } from '@/lib/rateLimit';
+import { runAchievementEngine } from '@/lib/achievementEngine';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -283,6 +284,9 @@ Make the diet plan use foods commonly available in ${s(user.country ?? 'India')}
       workoutPlan: parsedPlan.workoutPlan,
       dietPlan: parsedPlan.dietPlan,
     });
+
+    /* Trigger achievements check asynchronously */
+    void runAchievementEngine(userId);
 
     return NextResponse.json({ success: true, data: plan.toObject() });
 
