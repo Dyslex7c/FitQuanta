@@ -27,6 +27,7 @@ export interface IUserDocument extends Document {
   bmiCategory?: BMICategory;
   onboardingComplete: boolean;
   favoriteExercises?: string[];
+  activeTrainerId?: mongoose.Types.ObjectId | null;
 }
 
 const UserSchema = new Schema<IUserDocument>(
@@ -53,6 +54,7 @@ const UserSchema = new Schema<IUserDocument>(
     bmiCategory: { type: String, enum: ['Underweight', 'Normal', 'Overweight', 'Obese'] },
     onboardingComplete: { type: Boolean, default: false },
     favoriteExercises: { type: [String], default: [] },
+    activeTrainerId: { type: Schema.Types.ObjectId, ref: 'Trainer', default: null },
   },
   { timestamps: true }
 );

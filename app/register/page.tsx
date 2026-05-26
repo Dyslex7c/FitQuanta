@@ -203,6 +203,32 @@ export default function RegisterPage() {
           <Link href="/login" style={{ color: '#f07028', fontWeight: 500 }}>Sign in</Link>
         </p>
 
+        {/* Trainer Portal Link Option */}
+        <div
+          className="card"
+          style={{
+            marginTop: '24px',
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, rgba(240,112,40,0.05) 0%, rgba(6,6,10,0) 100%)',
+            borderColor: 'rgba(240,112,40,0.15)',
+            padding: '16px 18px'
+          }}
+        >
+          <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', marginBottom: '4px' }}>
+            Are you a Professional Trainer?
+          </h4>
+          <p style={{ fontSize: '11px', color: '#9090a0', marginBottom: '12px' }}>
+            Apply to join our coaching program, build custom plans, and train clients worldwide.
+          </p>
+          <Link
+            href="/trainer/register"
+            className="btn btn-outline"
+            style={{ width: '100%', fontSize: '12px', padding: '6px 12px' }}
+          >
+            Apply as Trainer
+          </Link>
+        </div>
+
       </div>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

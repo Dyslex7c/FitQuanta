@@ -29,12 +29,19 @@ export default function LoginPage() {
   const [toast,       setToast]       = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [loginMode,   setLoginMode]   = useState<'client' | 'trainer'>('client');
+
+  const getRedirectPath = (u: any) => {
+    if (u.role === 'admin') return '/admin';
+    if (u.role === 'trainer') return '/trainer/dashboard';
+    return u.onboardingComplete ? '/dashboard' : '/onboarding';
+  };
 
   // Redirect already-authenticated users away — runs only after hydration
   useEffect(() => {
     if (isAuthenticated && user) {
       setRedirecting(true);
-      router.replace(user.onboardingComplete ? '/dashboard' : '/onboarding');
+      router.replace(getRedirectPath(user));
     }
   }, [isAuthenticated, user, router]);
 
@@ -50,12 +57,13 @@ export default function LoginPage() {
       const res = await axios.post('/api/auth/login', {
         email:    email.trim().toLowerCase(),
         password,
+        role:     loginMode,
       });
 
       if (res.data.success) {
         const { token, user: userData } = res.data.data;
         dispatch(setCredentials({ token, user: userData }));
-        router.push(userData.onboardingComplete ? '/dashboard' : '/onboarding');
+        router.push(getRedirectPath(userData));
       }
     } catch (err: any) {
       if (err.response?.status === 401) {
@@ -87,12 +95,54 @@ export default function LoginPage() {
       <div className="animate-slide-up" style={{ width: '100%', maxWidth: '380px' }}>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <img src="/logo.png" alt="FitQuanta" style={{ height: '52px', width: '52px', margin: '0 auto 18px', display: 'block' }} />
           <h2 style={{ fontFamily: 'var(--font-display), Orbitron, sans-serif', fontSize: '18px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff', marginBottom: '6px' }}>
             Sign In
           </h2>
-          <p style={{ fontSize: '13px', color: '#9090a0' }}>Enter your details to continue</p>
+          <p style={{ fontSize: '13px', color: '#9090a0' }}>
+            {loginMode === 'client' ? 'Enter your credentials to continue' : 'Enter your professional trainer credentials'}
+          </p>
+        </div>
+
+        {/* Role visual tabs */}
+        <div style={{ display: 'flex', background: '#0d0d14', border: '1px solid #22223a', borderRadius: '8px', padding: '3px', marginBottom: '20px' }}>
+          <button
+            type="button"
+            onClick={() => setLoginMode('client')}
+            style={{
+              flex: 1,
+              padding: '6px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              border: 0,
+              borderRadius: '6px',
+              background: loginMode === 'client' ? '#f07028' : 'transparent',
+              color: loginMode === 'client' ? '#ffffff' : '#9090a0',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            User Access
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoginMode('trainer')}
+            style={{
+              flex: 1,
+              padding: '6px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              border: 0,
+              borderRadius: '6px',
+              background: loginMode === 'trainer' ? '#f07028' : 'transparent',
+              color: loginMode === 'trainer' ? '#ffffff' : '#9090a0',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            Trainer Access
+          </button>
         </div>
 
         <div className="card">

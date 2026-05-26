@@ -26,13 +26,29 @@ export default function Navbar() {
     router.push('/login');
   };
 
-  const links = showAuthLinks ? [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Exercise Library', href: '/exercises' },
-    { label: 'My Plan', href: '/plans' },
-    { label: 'Progress', href: '/progress' },
-    ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])
-  ] : [];
+  const links = showAuthLinks
+    ? user.role === 'admin'
+      ? [
+          { label: 'Admin Dashboard', href: '/admin' },
+          { label: 'Approve Trainers', href: '/admin/trainers' },
+        ]
+      : user.role === 'trainer'
+      ? [
+          { label: 'Trainer Dashboard', href: '/trainer/dashboard' },
+          { label: 'Manage Plans', href: '/trainer/plans' },
+          { label: 'Chat', href: '/chat' },
+        ]
+      : [
+          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Trainers', href: '/trainer' },
+          { label: 'Exercise Library', href: '/exercises' },
+          { label: 'My Plan', href: '/plans' },
+          { label: 'Progress', href: '/progress' },
+          { label: 'Chat', href: '/chat' },
+          { label: 'Purchases', href: '/purchases' },
+          ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])
+        ]
+    : [];
 
 
 

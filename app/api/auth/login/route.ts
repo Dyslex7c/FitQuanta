@@ -19,7 +19,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     if (!parsed.success) {
       return NextResponse.json({ success: false, message: 'Invalid input' }, { status: 400 });
     }
-    const { email, password } = parsed.data;
+    const { email, password, role } = parsed.data;
     await connectDB();
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
@@ -29,6 +29,17 @@ export async function POST(req: NextRequest): Promise<NextResponse<ApiResponse<{
     if (!match) {
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
+
+    /* Enforce visual access mode validation */
+    if (role) {
+      if (role === 'trainer' && user.role !== 'trainer') {
+        return NextResponse.json({ success: false, message: 'This account is not registered as a trainer.' }, { status: 403 });
+      }
+      if (role === 'client' && user.role === 'trainer') {
+        return NextResponse.json({ success: false, message: 'This account is not registered as a standard user.' }, { status: 403 });
+      }
+    }
+
     const token = signToken({ userId: user._id.toString(), role: user.role });
     const userObj = user.toObject();
     delete (userObj as any).password;
