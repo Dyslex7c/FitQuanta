@@ -54,6 +54,7 @@ export default function Navbar() {
           { label: 'Exercise Library', href: '/exercises' },
           { label: 'My Plan', href: '/plans' },
           { label: 'Progress', href: '/progress' },
+          { label: 'Training Analysis', href: '/training-analysis' },
           { label: 'Badges', href: '/badges' },
           { label: 'Chat', href: '/chat' },
           { label: 'Purchases', href: '/purchases' },

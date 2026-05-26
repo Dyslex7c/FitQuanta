@@ -5,6 +5,8 @@ import { verifyAuth, sanitizeObject } from '@/lib/auth';
 import { progressLogSchema } from '@/schemas/progressLogSchema';
 
 import { runAchievementEngine } from '@/lib/achievementEngine';
+import { runTrainingAnalysisEngine } from '@/lib/trainingAnalysisEngine';
+
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
@@ -24,6 +26,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     
     /* Trigger achievements check asynchronously */
     void runAchievementEngine(userId);
+
+    /* Trigger training analysis engine asynchronously */
+    void runTrainingAnalysisEngine(userId);
 
     return NextResponse.json({ success: true, data: log.toObject() }, { status: 201 });
   } catch (error: unknown) {

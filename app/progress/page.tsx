@@ -12,6 +12,8 @@ import type { IProgressLog } from '@/types/progress';
 import api from '@/lib/axiosInstance';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Toast from '@/components/Toast';
+import TrainingAnalysisPage from '@/app/training-analysis/page';
+
 import {
   getWeightData,
   getMacroData,
@@ -31,7 +33,7 @@ const getLocalDatetimeString = () => {
 };
 
 export default function ProgressPage() {
-  const [activePageTab, setActivePageTab] = useState<'log' | 'analytics'>('log');
+  const [activePageTab, setActivePageTab] = useState<'log' | 'analytics' | 'training-quality'>('log');
   const [activeFormTab, setActiveFormTab] = useState<'workout' | 'nutrition' | 'health'>('workout');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -43,6 +45,8 @@ export default function ProgressPage() {
       const tab = params.get('tab');
       if (tab === 'analytics' || window.location.hash === '#charts') {
         setActivePageTab('analytics');
+      } else if (tab === 'training-quality' || window.location.hash === '#training-quality') {
+        setActivePageTab('training-quality');
       } else if (tab === 'log' || window.location.hash === '#log') {
         setActivePageTab('log');
       }
@@ -292,6 +296,13 @@ export default function ProgressPage() {
               className={activePageTab === 'analytics' ? 'tab-item tab-item-active' : 'tab-item'}
             >
               View Analytics
+            </button>
+            <button
+              type="button"
+              onClick={() => setActivePageTab('training-quality')}
+              className={activePageTab === 'training-quality' ? 'tab-item tab-item-active' : 'tab-item'}
+            >
+              Training Quality
             </button>
           </div>
 
@@ -653,7 +664,7 @@ export default function ProgressPage() {
                 </div>
               </form>
             </div>
-          ) : (
+          ) : activePageTab === 'analytics' ? (
             /* Analytics View: Charts & Recent Activity Log List */
             <div className="space-y-12">
               {/* Charts Grid */}
@@ -800,6 +811,8 @@ export default function ProgressPage() {
                 )}
               </div>
             </div>
+          ) : (
+            <TrainingAnalysisPage />
           )}
         </div>
       </div>
