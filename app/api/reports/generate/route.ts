@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
 import { connectDB } from '@/lib/mongodb';
 import Chat from '@/models/Chat';
 import ProgressLog from '@/models/ProgressLog';
 import User from '@/models/User';
 import Trainer from '@/models/Trainer';
+import Report from '@/models/Report';
 import { verifyAuth, handleApiError } from '@/lib/auth';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // 1. Fetch conversation to verify client & trainer identities
     const chat = await Chat.findById(conversationId);
-    if (!chat || !chat.isActive) {
+    if (!chat || chat.isActive === false) {
       return NextResponse.json({ success: false, message: 'Active conversation session not found' }, { status: 404 });
     }
 
@@ -390,15 +389,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 </html>
     `;
 
-    // 5. Save HTML report to public/reports
-    const reportsDir = path.join(process.cwd(), 'public', 'reports');
-    await fs.mkdir(reportsDir, { recursive: true });
+    // 5. Save HTML report to MongoDB
+    const savedReport = await Report.create({
+      htmlContent: htmlReport,
+    });
 
-    const uniqueFilename = `report-${clientUser._id}-${Date.now()}.html`;
-    const filePath = path.join(reportsDir, uniqueFilename);
-    await fs.writeFile(filePath, htmlReport, 'utf8');
-
-    const reportUrl = `/reports/${uniqueFilename}`;
+    const reportUrl = `/api/reports/view/${savedReport._id}`;
 
     return NextResponse.json({
       success: true,
@@ -407,7 +403,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         fileName: `FitQuanta_Analytics_Report_${clientUser.name.replace(/\s+/g, '_')}.html`,
       },
     });
-  } catch (error: unknown) {
-    return handleApiError(error);
+  } catch (error: any) {
+    console.error('[REPORTS GENERATE ERROR]', error);
+    return NextResponse.json({ success: false, message: error.message || 'Something went wrong' }, { status: 500 });
   }
 }

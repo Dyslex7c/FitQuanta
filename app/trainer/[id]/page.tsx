@@ -37,7 +37,7 @@ interface TrainerProfile {
 export default function TrainerDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const id = params?.id as string;
 
   const [data, setData] = useState<TrainerProfile | null>(null);
   const [loading, setLoading] = useState(true);

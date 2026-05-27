@@ -10,7 +10,8 @@ const difficultyColor: Record<string, string> = {
 };
 
 export default function ExerciseDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const params = useParams<{ slug: string }>();
+  const slug = params?.slug;
   const [exercise, setExercise] = useState<IExercise | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);

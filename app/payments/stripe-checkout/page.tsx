@@ -7,11 +7,11 @@ function StripeCheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sessionId = searchParams.get('session_id') || '';
-  const purchaseId = searchParams.get('purchase_id') || '';
-  const planName = searchParams.get('plan_name') || 'FitQuanta Coaching Plan';
-  const amountStr = searchParams.get('amount') || '0';
-  const trainerName = searchParams.get('trainer_name') || 'Certified Coach';
+  const sessionId = searchParams?.get('session_id') || '';
+  const purchaseId = searchParams?.get('purchase_id') || '';
+  const planName = searchParams?.get('plan_name') || 'FitQuanta Coaching Plan';
+  const amountStr = searchParams?.get('amount') || '0';
+  const trainerName = searchParams?.get('trainer_name') || 'Certified Coach';
 
   const amount = Number(amountStr);
 

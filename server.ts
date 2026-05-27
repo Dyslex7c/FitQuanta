@@ -61,19 +61,13 @@ app.prepare().then(() => {
       socket.join(`conv:${conversationId}`);
     });
 
-    /* Send a message */
-    socket.on('message:send', (data: {
+    /* Send a message – broadcast to everyone in the room EXCEPT the sender.
+       The sender already appends the message locally after the REST API call. */
+    socket.on('message:send', (data: Record<string, unknown> & {
       conversationId: string;
-      senderId: string;
-      content: string;
-      type: 'text' | 'image' | 'file';
-      fileUrl?: string;
     }) => {
-      console.log(`[SOCKET SERVER] Message sent in room conv:${data.conversationId} by ${data.senderId}`);
-      io.to(`conv:${data.conversationId}`).emit('message:receive', {
-        ...data,
-        createdAt: new Date().toISOString(),
-      });
+      console.log(`[SOCKET SERVER] Message sent in room conv:${data.conversationId} by ${data.senderId ?? 'unknown'}`);
+      socket.to(`conv:${data.conversationId}`).emit('message:receive', data);
     });
 
     /* Typing indicator */
