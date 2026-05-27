@@ -24,9 +24,11 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
   const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
   const [clientUserId, setClientUserId] = useState<string>('');
   const [trainerUserId, setTrainerUserId] = useState<string>('');
+  const [generatingReport, setGeneratingReport] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom on message sync
   const scrollToBottom = () => {
@@ -160,38 +162,102 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
     }
   };
 
-  // Mock attachments logic
-  const handleSendAttachment = async (type: 'image' | 'file') => {
-    const mockUrls = {
-      image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=400',
-      file: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
-    };
+  // Trigger camera file input click
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
 
-    const payload = {
-      content: type === 'image' ? 'Shared an image attachment' : 'Shared a document report.pdf',
-      type,
-      fileUrl: mockUrls[type],
-      fileName: type === 'file' ? 'report.pdf' : '',
-      senderRole: role
-    };
+  // Upload photo captured or selected by user
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    // Reset input to enable change event on identical selections
+    e.target.value = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    setLoading(true);
+    try {
+      const uploadRes = await axios.post('/api/upload', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (uploadRes.data.success) {
+        const uploadData = uploadRes.data.data;
+
+        // Post image attachment message
+        const msgRes = await axios.post(
+          `/api/chat/messages/${conversationId}`,
+          {
+            content: 'Shared an image attachment',
+            type: 'image',
+            fileUrl: uploadData.url,
+            fileName: uploadData.name,
+            senderRole: role,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (msgRes.data.success) {
+          const createdMsg = msgRes.data.data;
+          socket.emit('message:send', {
+            ...createdMsg,
+            conversationId,
+          });
+          setMessages((prev) => [...prev, createdMsg]);
+        }
+      }
+    } catch (err) {
+      console.error('[IMAGE UPLOAD ERROR]', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Generate real report based on logged user progress analytics
+  const handleGenerateReport = async () => {
+    setGeneratingReport(true);
     try {
       const res = await axios.post(
-        `/api/chat/messages/${conversationId}`,
-        payload,
+        '/api/reports/generate',
+        { conversationId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (res.data.success) {
-        const createdMsg = res.data.data;
-        socket.emit('message:send', {
-          ...createdMsg,
-          conversationId,
-        });
-        setMessages((prev) => [...prev, createdMsg]);
+        const reportData = res.data.data;
+
+        // Post generated report file message
+        const msgRes = await axios.post(
+          `/api/chat/messages/${conversationId}`,
+          {
+            content: `Shared progress report: ${reportData.fileName}`,
+            type: 'file',
+            fileUrl: reportData.url,
+            fileName: reportData.fileName,
+            senderRole: role,
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (msgRes.data.success) {
+          const createdMsg = msgRes.data.data;
+          socket.emit('message:send', {
+            ...createdMsg,
+            conversationId,
+          });
+          setMessages((prev) => [...prev, createdMsg]);
+        }
       }
     } catch (err) {
-      console.error('[ATTACHMENT ERROR]', err);
+      console.error('[GENERATE REPORT ERROR]', err);
+    } finally {
+      setGeneratingReport(false);
     }
   };
 
@@ -335,10 +401,18 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
           
           {/* Attachment buttons */}
           <div style={{ display: 'flex', gap: '4px' }}>
+            {/* Hidden Input for Camera / Upload */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+            />
             <button
               type="button"
-              onClick={() => handleSendAttachment('image')}
-              title="Send Image"
+              onClick={handleCameraClick}
+              title="Capture Photo or Upload Image"
               style={{
                 background: 'rgba(255,255,255,0.02)',
                 border: '1px solid #22223a',
@@ -359,8 +433,9 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
             </button>
             <button
               type="button"
-              onClick={() => handleSendAttachment('file')}
-              title="Send Document File"
+              onClick={handleGenerateReport}
+              disabled={generatingReport}
+              title="Generate Client Analytics Report"
               style={{
                 background: 'rgba(255,255,255,0.02)',
                 border: '1px solid #22223a',
@@ -377,7 +452,11 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f07028'; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#22223a'; }}
             >
-              📁
+              {generatingReport ? (
+                <span className="spinner" style={{ width: '14px', height: '14px', border: '2px solid #f07028', borderTopColor: 'transparent', animation: 'spin 1s linear infinite' }} />
+              ) : (
+                '📁'
+              )}
             </button>
           </div>
 

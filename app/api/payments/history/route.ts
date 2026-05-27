@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongodb';
 import Purchase from '@/models/Purchase';
 import Trainer from '@/models/Trainer';
+import User from '@/models/User';
 import { verifyAuth, handleApiError } from '@/lib/auth';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -23,7 +24,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       query = { status: 'completed' };
     }
 
-    const purchases = await Purchase.find(query).sort({ createdAt: -1 }).lean();
+    const purchases = await Purchase.find(query)
+      .populate({ path: 'clientId', model: User, select: 'name email' })
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json({ success: true, data: purchases });
   } catch (error: unknown) {

@@ -166,7 +166,7 @@ export default function OnboardingForm() {
   };
 
   return (
-    <div className="card max-w-2xl mx-auto shadow-lg animate-slide-up">
+    <div className="card max-w-2xl animate-slide-up" style={{ margin: '0 auto' }}>
       {/* Stepper */}
       <div className="stepper">
         {[1, 2, 3, 4].map((stepVal, i) => (

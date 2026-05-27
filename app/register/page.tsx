@@ -37,8 +37,16 @@ export default function RegisterPage() {
   const [toast,       setToast]       = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [loading,     setLoading]     = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const [mounted,     setMounted]     = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      setCaptchaToken('dev-bypass');
+    }
+  }, []);
 
   // Redirect already-authenticated users away — runs only after hydration
   useEffect(() => {
@@ -89,7 +97,11 @@ export default function RegisterPage() {
         setToast({ message: err.response?.data?.message || 'Registration failed. Please try again.', type: 'error' });
       }
       /* Reset CAPTCHA widget on any error so user gets a fresh token */
-      setCaptchaToken(null);
+      setCaptchaToken(
+        typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+          ? 'dev-bypass'
+          : null
+      );
       turnstileRef.current?.reset();
     } finally {
       setLoading(false);
@@ -193,16 +205,18 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: 'dark', size: 'flexible' }}
-              />
-            </div>
+            {mounted && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && (
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016'}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => setCaptchaToken(null)}
+                  onExpire={() => setCaptchaToken(null)}
+                  options={{ theme: 'dark', size: 'flexible' }}
+                />
+              </div>
+            )}
 
             <button
               id="register-submit"

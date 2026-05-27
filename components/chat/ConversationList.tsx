@@ -125,8 +125,8 @@ export default function ConversationList({ currentConversationId, token, role }:
                   {name}
                 </strong>
                 {conv.lastMessageAt && (
-                  <span style={{ fontSize: '10px', color: '#545870' }}>
-                    {new Date(conv.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                  <span style={{ fontSize: '10px', color: '#545870' }} suppressHydrationWarning>
+                    {new Date(conv.lastMessageAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
                 )}
               </div>

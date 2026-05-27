@@ -212,22 +212,36 @@ export default function TrainerDashboardPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #22223a', color: '#545870' }}>
+                    <th style={{ padding: '10px 8px', fontWeight: 600 }}>Client Name</th>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Plan Name</th>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Amount Paid</th>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Commission (15%)</th>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Net Earnings</th>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Purchase Date</th>
+                    <th style={{ padding: '10px 8px', fontWeight: 600, textAlign: 'center' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {purchases.map((pur) => (
                     <tr key={pur._id} style={{ borderBottom: '1px solid #13131e' }}>
-                      <td style={{ padding: '12px 8px', fontWeight: 600, color: '#ffffff' }}>{pur.planName}</td>
+                      <td style={{ padding: '12px 8px', fontWeight: 600, color: '#ffffff' }}>
+                        {pur.clientId?.name || 'Client'}
+                      </td>
+                      <td style={{ padding: '12px 8px', color: '#ffffff' }}>{pur.planName}</td>
                       <td style={{ padding: '12px 8px', color: '#ffffff' }}>₹{pur.amountINR.toLocaleString('en-IN')}</td>
                       <td style={{ padding: '12px 8px', color: '#9090a0' }}>₹{pur.platformCommissionINR.toLocaleString('en-IN')}</td>
                       <td style={{ padding: '12px 8px', color: '#1ed696', fontWeight: 600 }}>₹{pur.trainerEarningsINR.toLocaleString('en-IN')}</td>
                       <td style={{ padding: '12px 8px', color: '#545870' }}>
                         {new Date(pur.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td style={{ padding: '12px 8px', textAlign: 'center' }}>
+                        <button
+                          onClick={() => router.push('/chat')}
+                          className="btn btn-outline"
+                          style={{ fontSize: '11px', padding: '4px 10px', height: 'auto', display: 'inline-flex' }}
+                        >
+                          💬 Open Chat
+                        </button>
                       </td>
                     </tr>
                   ))}

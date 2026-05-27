@@ -8,15 +8,16 @@ import ConversationList from '@/components/chat/ConversationList';
 
 export default function ChatDashboardPage() {
   const router = useRouter();
-  const { token, user } = useSelector((s: RootState) => s.auth);
+  const { token, user, hydrated } = useSelector((s: RootState) => s.auth);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!token || !user) {
       router.replace('/login');
     }
-  }, [token, user, router]);
+  }, [token, user, router, hydrated]);
 
-  if (!token || !user) return null;
+  if (!hydrated || !token || !user) return null;
 
   return (
     <div className="page-wrapper" style={{ background: '#06060a', height: '100vh', display: 'flex', flexDirection: 'column' }}>

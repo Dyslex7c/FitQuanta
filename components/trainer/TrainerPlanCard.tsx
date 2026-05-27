@@ -3,6 +3,7 @@
 import React from 'react';
 import type { ITrainerPlan } from '@/types/trainer';
 import RazorpayButton from '../payment/RazorpayButton';
+import StripeButton from '../payment/StripeButton';
 
 interface TrainerPlanCardProps {
   plan: ITrainerPlan;
@@ -91,7 +92,15 @@ export default function TrainerPlanCard({ plan, onSuccess, onFailure }: TrainerP
       </div>
 
       {/* Pay action */}
-      <div style={{ marginTop: 'auto' }}>
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <StripeButton
+          planId={plan._id}
+          priceINR={plan.priceINR}
+          onFailure={onFailure}
+        />
+        <div style={{ textAlign: 'center', fontSize: '9px', color: '#545870', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '2px 0' }}>
+          — OR —
+        </div>
         <RazorpayButton
           planId={plan._id}
           priceINR={plan.priceINR}

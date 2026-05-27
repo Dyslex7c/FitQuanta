@@ -308,7 +308,7 @@ export default function ProgressPage() {
 
           {activePageTab === 'log' ? (
             /* Form and Input Panel */
-            <div className="card max-w-2xl mx-auto mb-8">
+            <div className="card w-full max-w-2xl mx-auto mb-8" style={{ margin: '0 auto' }}>
               <h2 className="section-title text-base mb-6">
                 Log Daily Metric
               </h2>

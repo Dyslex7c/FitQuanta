@@ -86,7 +86,7 @@ function DashboardContent({ user }: { user: any }) {
         </div>
 
         {/* Quick nav */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '10px' }}>
           {!hasMedicalGate ? (
             <Link href="/plans" className="card-interactive">
               <p className="section-title-cyan" style={{ marginBottom: '7px' }}>My Plan</p>
@@ -101,6 +101,14 @@ function DashboardContent({ user }: { user: any }) {
           <Link href="/progress" className="card-interactive">
             <p className="section-title" style={{ marginBottom: '7px' }}>Progress</p>
             <p style={{ fontSize: '12px', color: '#9090a0' }}>Log activity and visualise your charts</p>
+          </Link>
+          <Link href="/trainer" className="card-interactive">
+            <p className="section-title-cyan" style={{ marginBottom: '7px' }}>Trainers</p>
+            <p style={{ fontSize: '12px', color: '#9090a0' }}>Hire a certified coach for custom splits & chat</p>
+          </Link>
+          <Link href="/purchases" className="card-interactive">
+            <p className="section-title-cyan" style={{ marginBottom: '7px' }}>Coaching & Billing</p>
+            <p style={{ fontSize: '12px', color: '#9090a0' }}>Manage subscriptions, leaves, and reviews</p>
           </Link>
         </div>
 
