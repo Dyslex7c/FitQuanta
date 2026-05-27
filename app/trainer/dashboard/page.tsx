@@ -1,22 +1,45 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import axios from 'axios';
 import Toast from '@/components/Toast';
 
+interface TrainerData {
+  _id: string;
+  name: string;
+  status: string;
+  availabilityStatus: string;
+  adminNote?: string;
+  averageRating: number;
+  totalReviews: number;
+}
+
+interface PurchaseData {
+  _id: string;
+  clientId?: {
+    _id: string;
+    name: string;
+  };
+  planName: string;
+  amountINR: number;
+  platformCommissionINR: number;
+  trainerEarningsINR: number;
+  createdAt: string;
+}
+
 export default function TrainerDashboardPage() {
   const router = useRouter();
   const { token, user } = useSelector((s: RootState) => s.auth);
 
-  const [trainer, setTrainer] = useState<any>(null);
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [trainer, setTrainer] = useState<TrainerData | null>(null);
+  const [purchases, setPurchases] = useState<PurchaseData[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       const [profileRes, historyRes] = await Promise.all([
         axios.get('/api/trainer/profile', { headers: { Authorization: `Bearer ${token}` } }),
@@ -30,7 +53,7 @@ export default function TrainerDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (!token || !user) {
@@ -42,8 +65,10 @@ export default function TrainerDashboardPage() {
       return;
     }
 
-    fetchDashboardData();
-  }, [token, user, router]);
+    Promise.resolve().then(() => {
+      fetchDashboardData();
+    });
+  }, [token, user, router, fetchDashboardData]);
 
   const handleUpdateAvailability = async (status: string) => {
     try {
@@ -165,7 +190,7 @@ export default function TrainerDashboardPage() {
         </div>
 
         {/* Key Metrics Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }} className="animate-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10 animate-slide-up">
           <div className="card" style={{ padding: '20px', background: '#0d0d14', border: '1px solid #22223a' }}>
             <span style={{ fontSize: '11px', color: '#545870', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '8px' }}>
               Total Earnings
@@ -198,7 +223,7 @@ export default function TrainerDashboardPage() {
         </div>
 
         {/* Client Subscriptions Table */}
-        <div className="card animate-slide-up" style={{ padding: '24px' }}>
+        <div className="card p-4 sm:p-6 animate-slide-up">
           <h3 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '18px', borderBottom: '1px solid #22223a', paddingBottom: '8px', color: '#ffffff' }}>
             Subscribed Clients & Purchases
           </h3>
@@ -209,7 +234,7 @@ export default function TrainerDashboardPage() {
             </p>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
+              <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid #22223a', color: '#545870' }}>
                     <th style={{ padding: '10px 8px', fontWeight: 600 }}>Client Name</th>
@@ -254,14 +279,6 @@ export default function TrainerDashboardPage() {
       </div>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      
-      <style jsx global>{`
-        @media (max-width: 600px) {
-          div[style*="gridTemplateColumns: repeat(3, 1fr)"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

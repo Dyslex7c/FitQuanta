@@ -22,7 +22,7 @@ export default function ChatDashboardPage() {
   return (
     <div className="page-wrapper" style={{ background: '#06060a', height: '100vh', display: 'flex', flexDirection: 'column' }}>
 
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '300px 1fr', overflow: 'hidden' }}>
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1 overflow-hidden">
         
         {/* Left Inbox Sidebar Column */}
         <aside
@@ -40,12 +40,12 @@ export default function ChatDashboardPage() {
           </div>
           <ConversationList
             token={token}
-            role={user.role as any}
+            role={user.role as 'client' | 'trainer'}
           />
         </aside>
 
         {/* Right Active Messaging Column Placeholder */}
-        <main style={{ height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main className="hidden md:flex h-full overflow-hidden items-center justify-center">
           <div style={{ textAlign: 'center', maxWidth: '320px', padding: '24px' }} className="animate-slide-up">
             <span style={{ fontSize: '42px', display: 'block', marginBottom: '16px' }}>💬</span>
             <h3 style={{ fontSize: '15px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#ffffff', marginBottom: '8px' }}>

@@ -3,19 +3,43 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import TrainerPlanCard from '@/components/trainer/TrainerPlanCard';
 import Toast from '@/components/Toast';
+import type { ITrainerPlan } from '@/types/trainer';
+
+interface Review {
+  _id: string;
+  clientName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+interface TrainerProfile {
+  trainer: {
+    _id: string;
+    name: string;
+    location?: string;
+    country: string;
+    yearsOfExperience: number;
+    clientsTrained: number;
+    specializations: string[];
+    bio: string;
+    certifications?: string[];
+    profilePhotoUrl?: string;
+    averageRating: number;
+    totalReviews: number;
+  };
+  plans: ITrainerPlan[];
+  reviews: Review[];
+}
 
 export default function TrainerDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
-  const { token, user } = useSelector((s: RootState) => s.auth);
-
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<TrainerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -31,7 +55,7 @@ export default function TrainerDetailPage() {
         } else {
           setError(res.data.message || 'Trainer not found.');
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error('[DETAIL PROFILE ERROR]', err);
         setError('Trainer profile not found.');
       } finally {
@@ -111,6 +135,7 @@ export default function TrainerDetailPage() {
               flexShrink: 0
             }}
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={trainer.profilePhotoUrl || defaultAvatar} alt={trainer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
@@ -160,7 +185,8 @@ export default function TrainerDetailPage() {
       </div>
 
       {/* Main Details Body */}
-      <div className="page-inner" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '40px', alignItems: 'flex-start', paddingTop: '36px' }}>
+      {/* Main Details Body */}
+      <div className="page-inner grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start pt-9">
         
         {/* Left Column Profile info & Reviews */}
         <div>
@@ -211,7 +237,7 @@ export default function TrainerDetailPage() {
               </p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {reviews.map((rev: any) => (
+                {reviews.map((rev: Review) => (
                   <div key={rev._id} style={{ borderBottom: '1px solid #13131e', paddingBottom: '14px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                       <strong style={{ fontSize: '13px', color: '#ffffff' }}>
@@ -241,7 +267,7 @@ export default function TrainerDetailPage() {
         </div>
 
         {/* Right Column Available Pricing Plans */}
-        <aside style={{ position: 'sticky', top: '80px' }}>
+        <aside className="lg:sticky lg:top-20">
           <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', color: '#ffffff' }}>
             Choose Plan Package
           </h3>
@@ -251,7 +277,7 @@ export default function TrainerDetailPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {plans.map((plan: any) => (
+              {plans.map((plan: ITrainerPlan) => (
                 <div key={plan._id}>
                   <TrainerPlanCard
                     plan={plan}
@@ -267,18 +293,6 @@ export default function TrainerDetailPage() {
       </div>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          div[style*="gridTemplateColumns: 1fr 340px"] {
-            grid-template-columns: 1fr !important;
-          }
-          aside {
-            position: relative !important;
-            top: 0 !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

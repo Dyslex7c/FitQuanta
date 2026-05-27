@@ -1,16 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import type { ITrainer, ITrainerFilters } from '@/types/trainer';
 import TrainerCard from '@/components/trainer/TrainerCard';
 import TrainerFilters from '@/components/trainer/TrainerFilters';
 import TrainerSearch from '@/components/trainer/TrainerSearch';
 
 export default function TrainerMarketplacePage() {
-  const { token } = useSelector((s: RootState) => s.auth);
   const [trainers, setTrainers] = useState<(ITrainer & { cheapestPlan?: { priceINR: number } | null })[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,7 +24,7 @@ export default function TrainerMarketplacePage() {
     page: 1,
   });
 
-  const fetchTrainers = async () => {
+  const fetchTrainers = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -50,17 +47,19 @@ export default function TrainerMarketplacePage() {
       } else {
         setError(res.data.message || 'Failed to search trainers.');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[FETCH TRAINERS ERROR]', err);
       setError('Something went wrong. Please verify your internet connection.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
-    fetchTrainers();
-  }, [filters]);
+    Promise.resolve().then(() => {
+      fetchTrainers();
+    });
+  }, [fetchTrainers]);
 
   const handleSearch = (searchVal: string) => {
     setFilters(prev => ({ ...prev, search: searchVal, page: 1 }));
@@ -98,10 +97,10 @@ export default function TrainerMarketplacePage() {
         </div>
 
         {/* Main Columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '30px', alignItems: 'flex-start' }}>
+        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 items-start">
           
           {/* Left Column Filters */}
-          <aside className="animate-slide-up" style={{ position: 'sticky', top: '80px' }}>
+          <aside className="animate-slide-up md:sticky md:top-20 mb-6 md:mb-0">
             <TrainerFilters filters={filters} onChange={setFilters} />
           </aside>
 
@@ -166,20 +165,6 @@ export default function TrainerMarketplacePage() {
 
         </div>
       </div>
-      
-      {/* Flattened CSS for custom range inputs and grid media queries */}
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          div[style*="gridTemplateColumns: 260px 1fr"] {
-            grid-template-columns: 1fr !important;
-          }
-          aside {
-            position: relative !important;
-            top: 0 !important;
-            margin-bottom: 24px;
-          }
-        }
-      `}</style>
     </div>
   );
 }

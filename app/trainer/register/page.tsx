@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import axios from 'axios';
 import Toast from '@/components/Toast';
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
@@ -21,7 +22,7 @@ export default function TrainerRegisterPage() {
   const [certInput, setCertInput] = useState('');
   const [certifications, setCertifications] = useState<string[]>([]);
   const [yearsOfExperience, setYearsOfExperience] = useState(2);
-  const [clientsTrained, setClientsTrained] = useState(0);
+  const clientsTrained = 0;
   const [specializations, setSpecializations] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -32,7 +33,9 @@ export default function TrainerRegisterPage() {
   const turnstileRef = useRef<TurnstileInstance>(null);
 
   React.useEffect(() => {
-    setMounted(true);
+    Promise.resolve().then(() => {
+      setMounted(true);
+    });
   }, []);
 
   const availableSpecs = [
@@ -128,10 +131,13 @@ export default function TrainerRegisterPage() {
           router.push('/login');
         }, 3000);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('[TRAINER SUBMIT ERROR]', err);
+      const errorMsg = axios.isAxiosError(err) && err.response?.data?.message
+        ? err.response.data.message
+        : 'Onboarding failed. Please try again.';
       setToast({
-        message: err.response?.data?.message || 'Onboarding failed. Please try again.',
+        message: errorMsg,
         type: 'error',
       });
       /* Reset CAPTCHA widget on any error so user gets a fresh token */
@@ -151,18 +157,18 @@ export default function TrainerRegisterPage() {
         
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/logo.png" alt="FitQuanta" style={{ height: '52px', width: '52px', margin: '0 auto 18px', display: 'block' }} />
+          <Image src="/logo.png" alt="FitQuanta" width={52} height={52} style={{ margin: '0 auto 18px', display: 'block' }} />
           <h2 style={{ fontFamily: 'var(--font-display), Orbitron, sans-serif', fontSize: '20px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#ffffff', marginBottom: '6px' }}>
             Trainer Application
           </h2>
           <p style={{ fontSize: '13px', color: '#9090a0' }}>Apply to join FitQuanta coaching program</p>
         </div>
 
-        <div className="card" style={{ padding: '30px' }}>
+        <div className="card p-5 sm:p-7">
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
             {/* Primary Details Row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label" htmlFor="tr-name">Full Name</label>
                 <input
@@ -224,7 +230,7 @@ export default function TrainerRegisterPage() {
             </div>
 
             {/* Stats row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="label" htmlFor="tr-age">Age</label>
                 <input
@@ -244,7 +250,7 @@ export default function TrainerRegisterPage() {
                 <select
                   id="tr-gender"
                   value={gender}
-                  onChange={(e: any) => setGender(e.target.value)}
+                  onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other')}
                   className="input"
                   style={{ height: 'auto', padding: '10px' }}
                 >
@@ -269,7 +275,7 @@ export default function TrainerRegisterPage() {
             </div>
 
             {/* Country & Location */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="label" htmlFor="tr-country">Country</label>
                 <input
@@ -343,7 +349,7 @@ export default function TrainerRegisterPage() {
             {/* Specializations selectors */}
             <div>
               <label className="label" style={{ marginBottom: '8px' }}>Specializations (Select 1 or more)</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 {availableSpecs.map((spec) => {
                   const checked = specializations.includes(spec.value);
                   return (
@@ -416,15 +422,6 @@ export default function TrainerRegisterPage() {
       </div>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-      
-      <style jsx global>{`
-        @media (max-width: 500px) {
-          div[style*="gridTemplateColumns: 1fr 1fr"],
-          div[style*="gridTemplateColumns: 1fr 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

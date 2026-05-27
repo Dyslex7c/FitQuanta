@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import axios from 'axios';
 
 function StripeCheckoutContent() {
   const searchParams = useSearchParams();
@@ -116,23 +115,23 @@ function StripeCheckoutContent() {
       }}
     >
       <div
+        className="grid grid-cols-1 md:grid-cols-2"
         style={{
           width: '100%',
           maxWidth: '900px',
           background: '#151720',
           borderRadius: '16px',
           overflow: 'hidden',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
           border: '1px solid rgba(255,255,255,0.06)',
           boxShadow: '0 20px 40px rgba(0,0,0,0.5)'
         }}
       >
         {/* Left Side: Summary Panel */}
         <div
+          className="border-b md:border-b-0 md:border-r"
           style={{
             padding: '40px',
-            borderRight: '1px solid rgba(255,255,255,0.06)',
+            borderColor: 'rgba(255,255,255,0.06)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
@@ -371,15 +370,6 @@ function StripeCheckoutContent() {
       <style jsx global>{`
         @keyframes stripe-spin {
           to { transform: rotate(360deg); }
-        }
-        @media (max-width: 768px) {
-          div[style*="gridTemplateColumns: 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-          }
-          div[style*="borderRight: 1px solid"] {
-            border-right: none !important;
-            border-bottom: 1px solid rgba(255,255,255,0.06) !important;
-          }
         }
       `}</style>
     </div>

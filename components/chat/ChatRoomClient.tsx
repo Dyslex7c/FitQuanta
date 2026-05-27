@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
+import type { Socket } from 'socket.io-client';
 import { RootState } from '@/redux/store';
 import ConversationList from '@/components/chat/ConversationList';
 import ChatWindow from '@/components/chat/ChatWindow';
@@ -15,7 +16,7 @@ interface ChatRoomClientProps {
 export default function ChatRoomClient({ conversationId }: ChatRoomClientProps) {
   const router = useRouter();
   const { token, user, hydrated } = useSelector((s: RootState) => s.auth);
-  const [socket, setSocket] = useState<any>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -28,7 +29,9 @@ export default function ChatRoomClient({ conversationId }: ChatRoomClientProps) 
 
     // 2. Open socket connection
     const s = connectSocket(user._id, user.role);
-    setSocket(s);
+    Promise.resolve().then(() => {
+      setSocket(s);
+    });
 
     return () => {
       disconnectSocket();
@@ -47,15 +50,14 @@ export default function ChatRoomClient({ conversationId }: ChatRoomClientProps) 
     <div className="page-wrapper" style={{ background: '#06060a', height: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* Side-by-side Inbox Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '300px 1fr', overflow: 'hidden' }}>
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1 overflow-hidden">
         
         {/* Left Inbox Sidebar Column */}
         <aside
+          className={`${conversationId ? 'hidden md:block' : 'block'} h-full overflow-y-auto`}
           style={{
             background: '#0d0d14',
             borderRight: '1px solid #22223a',
-            height: '100%',
-            overflowY: 'auto'
           }}
         >
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #22223a', background: 'rgba(255,255,255,0.01)' }}>
@@ -66,18 +68,18 @@ export default function ChatRoomClient({ conversationId }: ChatRoomClientProps) 
           <ConversationList
             currentConversationId={conversationId}
             token={token}
-            role={user.role as any}
+            role={user.role}
           />
         </aside>
 
         {/* Right Active Messaging Column */}
-        <main style={{ height: '100%', overflow: 'hidden' }}>
+        <main className={`${conversationId ? 'block' : 'hidden md:block'} h-full overflow-hidden`}>
           {socket && conversationId ? (
             <ChatWindow
               conversationId={conversationId}
               token={token}
               currentUserId={user._id}
-              role={user.role as any}
+              role={user.role}
               socket={socket}
             />
           ) : (
@@ -89,20 +91,6 @@ export default function ChatRoomClient({ conversationId }: ChatRoomClientProps) 
         </main>
 
       </div>
-
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          div[style*="gridTemplateColumns: 300px 1fr"] {
-            grid-template-columns: 1fr !important;
-          }
-          aside {
-            display: ${conversationId ? 'none' : 'block'} !important;
-          }
-          main {
-            display: ${conversationId ? 'block' : 'none'} !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
