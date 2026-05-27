@@ -69,6 +69,7 @@ export default function Navbar() {
         { label: 'Trainers', href: '/trainer' },
         { label: 'Messages', href: '/chat' },
         { label: 'Purchases', href: '/purchases' },
+        { label: 'Badges', href: '/badges' },
         ...(user.onboardingComplete === false ? [{ label: 'Onboarding', href: '/onboarding', isWarning: true }] : [])
       ];
     }
