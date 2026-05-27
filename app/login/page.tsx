@@ -22,17 +22,22 @@ function validateLogin(email: string, password: string) {
 export default function LoginPage() {
   const dispatch = useDispatch();
   const router   = useRouter();
-  const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
+  const { isAuthenticated, user, hydrated } = useSelector((s: RootState) => s.auth);
 
-  const [email,       setEmail]       = useState('');
-  const [password,    setPassword]    = useState('');
-  const [errors,      setErrors]      = useState<Record<string, string>>({});
-  const [toast,       setToast]       = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [loading,     setLoading]     = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-  const [loginMode,   setLoginMode]   = useState<'client' | 'trainer'>('client');
+  const [email,        setEmail]        = useState('');
+  const [password,     setPassword]     = useState('');
+  const [errors,       setErrors]       = useState<Record<string, string>>({});
+  const [toast,        setToast]        = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [loading,      setLoading]      = useState(false);
+  const [redirecting,  setRedirecting]  = useState(false);
+  const [loginMode,    setLoginMode]    = useState<'client' | 'trainer'>('client');
+  const [mounted,      setMounted]      = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getRedirectPath = (u: any) => {
     if (u.role === 'admin') return '/admin';
@@ -42,11 +47,12 @@ export default function LoginPage() {
 
   // Redirect already-authenticated users away — runs only after hydration
   useEffect(() => {
+    if (!hydrated) return;
     if (isAuthenticated && user) {
       setRedirecting(true);
       router.replace(getRedirectPath(user));
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, hydrated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,9 +64,9 @@ export default function LoginPage() {
     setToast(null);
     try {
       const res = await axios.post('/api/auth/login', {
-        email:    email.trim().toLowerCase(),
+        email:          email.trim().toLowerCase(),
         password,
-        role:     loginMode,
+        role:           loginMode,
         turnstileToken: captchaToken,
       });
 
@@ -86,7 +92,7 @@ export default function LoginPage() {
   };
 
   // Show a spinner while redirect is in progress (not a blank page)
-  if (redirecting) {
+  if (!hydrated || redirecting || (isAuthenticated && user)) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#06060a' }}>
         <div className="spinner-lg" />
@@ -185,16 +191,18 @@ export default function LoginPage() {
               {errors.password && <p className="error-msg">{errors.password}</p>}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: 'dark', size: 'flexible' }}
-              />
-            </div>
+            {mounted && (
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => setCaptchaToken(null)}
+                  onExpire={() => setCaptchaToken(null)}
+                  options={{ theme: 'dark', size: 'flexible' }}
+                />
+              </div>
+            )}
 
             <button
               id="login-submit"

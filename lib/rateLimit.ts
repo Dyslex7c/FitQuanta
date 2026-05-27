@@ -7,6 +7,9 @@ export function rateLimit(
   max: number,
   windowMs: number
 ): boolean {
+  if (process.env.NODE_ENV !== 'production') {
+    return true; // Bypass rate limiting in development/test environments
+  }
   const now = Date.now();
   const timestamps = cache.get(identifier) ?? [];
   const recent = timestamps.filter((t) => now - t < windowMs);
@@ -14,3 +17,4 @@ export function rateLimit(
   cache.set(identifier, [...recent, now]);
   return true;
 }
+

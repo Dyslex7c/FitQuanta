@@ -75,9 +75,35 @@
   /* ─────────────────────────────────────────────────
      LAYOUT
   ───────────────────────────────────────────────── */
-  .page-wrapper { @apply min-h-screen bg-bg font-body; }
-  .page-inner   { @apply max-w-5xl mx-auto px-5 sm:px-8 py-10; }
-  .page-narrow  { @apply max-w-md mx-auto px-5 py-12; }
+  .page-wrapper {
+    min-height: 100vh;
+    background-color: #06060a;
+    font-family: var(--font-body), Inter, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .page-inner {
+    width: 100%;
+    max-width: 1024px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+  .page-narrow {
+    width: 100%;
+    max-width: 448px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
 
   /* Grid bg — only on hero sections */
   .bg-void-grid {

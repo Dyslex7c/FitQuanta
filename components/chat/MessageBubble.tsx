@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { IMessage } from '@/types/chat';
 
 interface MessageBubbleProps {
@@ -11,11 +11,12 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message, currentUserId, onConsentResponse }: MessageBubbleProps) {
   const isSelf = message.senderId === currentUserId;
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const formatTime = (isoString: string) => {
     try {
       const date = new Date(isoString);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } catch (e) {
       return '';
     }
@@ -150,13 +151,96 @@ export default function MessageBubble({ message, currentUserId, onConsentRespons
         >
           {/* File attachments */}
           {message.type === 'image' && message.fileUrl && (
-            <div style={{ marginBottom: '6px', borderRadius: '8px', overflow: 'hidden' }}>
-              <img
-                src={message.fileUrl}
-                alt="attachment"
-                style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', display: 'block' }}
-              />
-            </div>
+            <>
+              <div
+                onClick={() => setIsLightboxOpen(true)}
+                style={{
+                  marginBottom: '6px',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  cursor: 'zoom-in',
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.9'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
+              >
+                <img
+                  src={message.fileUrl}
+                  alt="attachment"
+                  style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', display: 'block' }}
+                />
+              </div>
+
+              {/* Lightbox modal */}
+              {isLightboxOpen && (
+                <div
+                  onClick={() => setIsLightboxOpen(false)}
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 9999,
+                    background: 'rgba(6,6,10,0.92)',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'zoom-out',
+                  }}
+                >
+                  <style>{`
+                    @keyframes fadeIn {
+                      from { opacity: 0; }
+                      to { opacity: 1; }
+                    }
+                    @keyframes scaleUp {
+                      from { transform: scale(0.92); opacity: 0; }
+                      to { transform: scale(1); opacity: 1; }
+                    }
+                  `}</style>
+                  {/* Close button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(false); }}
+                    style={{
+                      position: 'absolute',
+                      top: '20px',
+                      right: '24px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid #22223a',
+                      borderRadius: '50%',
+                      width: '40px',
+                      height: '40px',
+                      color: '#ffffff',
+                      fontSize: '18px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#f07028'; e.currentTarget.style.color = '#f07028'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#22223a'; e.currentTarget.style.color = '#ffffff'; }}
+                  >
+                    ✕
+                  </button>
+
+                  <img
+                    src={message.fileUrl}
+                    alt="Expanded attachment"
+                    style={{
+                      maxWidth: '90%',
+                      maxHeight: '90%',
+                      objectFit: 'contain',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 40px rgba(0,0,0,0.6)',
+                      animation: 'scaleUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {message.type === 'file' && message.fileUrl && (
@@ -195,7 +279,7 @@ export default function MessageBubble({ message, currentUserId, onConsentRespons
 
         {/* Bubble status & timestamp */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '10px', color: '#545870' }}>
-          <span>{formatTime(message.createdAt)}</span>
+          <span suppressHydrationWarning>{formatTime(message.createdAt)}</span>
           {isSelf && (
             <span style={{ color: message.seen ? '#1ed696' : '#545870' }}>
               {message.seen ? '✓✓ Seen' : '✓ Sent'}

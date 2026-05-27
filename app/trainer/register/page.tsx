@@ -27,8 +27,13 @@ export default function TrainerRegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted,     setMounted]     = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const availableSpecs = [
     { value: 'weight_loss', label: 'Weight Loss' },
@@ -373,16 +378,22 @@ export default function TrainerRegisterPage() {
             </div>
 
             {/* CAPTCHA Widget */}
-            <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: 'dark', size: 'flexible' }}
-              />
-            </div>
+            {mounted && (
+              <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={
+                    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) || process.env.NODE_ENV !== 'production'
+                      ? '1x0000000000000000000016'
+                      : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016')
+                  }
+                  onSuccess={(token) => setCaptchaToken(token)}
+                  onError={() => setCaptchaToken(null)}
+                  onExpire={() => setCaptchaToken(null)}
+                  options={{ theme: 'dark', size: 'flexible' }}
+                />
+              </div>
+            )}
 
             {/* Form actions */}
             <button
