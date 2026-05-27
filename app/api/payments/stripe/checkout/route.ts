@@ -70,7 +70,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       purchase.razorpayOrderId = mockSessionId;
       await purchase.save();
 
-      checkoutUrl = `${appUrl}/api/payments/stripe/verify?session_id=${mockSessionId}&purchase_id=${purchase._id.toString()}`;
+      checkoutUrl = `${appUrl}/payments/stripe-checkout?session_id=${mockSessionId}&purchase_id=${purchase._id.toString()}&plan_name=${encodeURIComponent(plan.name)}&amount=${plan.priceINR}&trainer_name=${encodeURIComponent(trainer.name)}`;
     } else {
       // Create Stripe Session
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {

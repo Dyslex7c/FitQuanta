@@ -33,9 +33,6 @@ export default function TrainerRegisterPage() {
 
   React.useEffect(() => {
     setMounted(true);
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-      setCaptchaToken('dev-bypass');
-    }
   }, []);
 
   const availableSpecs = [
@@ -138,11 +135,7 @@ export default function TrainerRegisterPage() {
         type: 'error',
       });
       /* Reset CAPTCHA widget on any error so user gets a fresh token */
-      setCaptchaToken(
-        typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-          ? 'dev-bypass'
-          : null
-      );
+      setCaptchaToken(null);
       turnstileRef.current?.reset();
     } finally {
       setLoading(false);
@@ -385,11 +378,15 @@ export default function TrainerRegisterPage() {
             </div>
 
             {/* CAPTCHA Widget */}
-            {mounted && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && (
+            {mounted && (
               <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
                 <Turnstile
                   ref={turnstileRef}
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016'}
+                  siteKey={
+                    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) || process.env.NODE_ENV !== 'production'
+                      ? '1x0000000000000000000016'
+                      : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016')
+                  }
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => setCaptchaToken(null)}
                   onExpire={() => setCaptchaToken(null)}

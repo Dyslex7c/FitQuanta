@@ -28,7 +28,7 @@ function validateRegister(name: string, email: string, password: string) {
 export default function RegisterPage() {
   const dispatch = useDispatch();
   const router   = useRouter();
-  const { isAuthenticated, user } = useSelector((s: RootState) => s.auth);
+  const { isAuthenticated, user, hydrated } = useSelector((s: RootState) => s.auth);
 
   const [name,        setName]        = useState('');
   const [email,       setEmail]       = useState('');
@@ -43,18 +43,16 @@ export default function RegisterPage() {
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-      setCaptchaToken('dev-bypass');
-    }
   }, []);
 
   // Redirect already-authenticated users away — runs only after hydration
   useEffect(() => {
+    if (!hydrated) return;
     if (isAuthenticated && user) {
       setRedirecting(true);
       router.replace(user.onboardingComplete ? '/dashboard' : '/onboarding');
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, hydrated, router]);
 
   const pwChecks = {
     length:  password.length >= 8,
@@ -97,11 +95,7 @@ export default function RegisterPage() {
         setToast({ message: err.response?.data?.message || 'Registration failed. Please try again.', type: 'error' });
       }
       /* Reset CAPTCHA widget on any error so user gets a fresh token */
-      setCaptchaToken(
-        typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-          ? 'dev-bypass'
-          : null
-      );
+      setCaptchaToken(null);
       turnstileRef.current?.reset();
     } finally {
       setLoading(false);
@@ -109,7 +103,7 @@ export default function RegisterPage() {
   };
 
   // Show a spinner while redirect is in progress (not a blank page)
-  if (redirecting) {
+  if (!hydrated || redirecting || (isAuthenticated && user)) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#06060a' }}>
         <div className="spinner-lg" />
@@ -205,11 +199,15 @@ export default function RegisterPage() {
               )}
             </div>
 
-            {mounted && typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && (
+            {mounted && (
               <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
                 <Turnstile
                   ref={turnstileRef}
-                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016'}
+                  siteKey={
+                    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) || process.env.NODE_ENV !== 'production'
+                      ? '1x0000000000000000000016'
+                      : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016')
+                  }
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => setCaptchaToken(null)}
                   onExpire={() => setCaptchaToken(null)}
