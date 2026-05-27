@@ -24,14 +24,14 @@ export default function LoginPage() {
   const router   = useRouter();
   const { isAuthenticated, user, hydrated } = useSelector((s: RootState) => s.auth);
 
-  const [email,       setEmail]       = useState('');
-  const [password,    setPassword]    = useState('');
-  const [errors,      setErrors]      = useState<Record<string, string>>({});
-  const [toast,       setToast]       = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [loading,     setLoading]     = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
-  const [loginMode,   setLoginMode]   = useState<'client' | 'trainer'>('client');
-  const [mounted,     setMounted]     = useState(false);
+  const [email,        setEmail]        = useState('');
+  const [password,     setPassword]     = useState('');
+  const [errors,       setErrors]       = useState<Record<string, string>>({});
+  const [toast,        setToast]        = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [loading,      setLoading]      = useState(false);
+  const [redirecting,  setRedirecting]  = useState(false);
+  const [loginMode,    setLoginMode]    = useState<'client' | 'trainer'>('client');
+  const [mounted,      setMounted]      = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
 
@@ -64,9 +64,9 @@ export default function LoginPage() {
     setToast(null);
     try {
       const res = await axios.post('/api/auth/login', {
-        email:    email.trim().toLowerCase(),
+        email:          email.trim().toLowerCase(),
         password,
-        role:     loginMode,
+        role:           loginMode,
         turnstileToken: captchaToken,
       });
 
@@ -195,11 +195,7 @@ export default function LoginPage() {
               <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0' }}>
                 <Turnstile
                   ref={turnstileRef}
-                  siteKey={
-                    (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) || process.env.NODE_ENV !== 'production'
-                      ? '1x0000000000000000000016'
-                      : (process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x0000000000000000000016')
-                  }
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                   onSuccess={(token) => setCaptchaToken(token)}
                   onError={() => setCaptchaToken(null)}
                   onExpire={() => setCaptchaToken(null)}
