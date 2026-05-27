@@ -78,10 +78,23 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
     };
     fetchDetails();
 
-    // 3. Establish Socket.IO listeners
-    socket.emit('conversation:join', conversationId);
+    // 3. Establish Socket.IO listeners and join active conversation room
+    const joinRoom = () => {
+      console.log('[SOCKET] Joining conversation room in ChatWindow:', conversationId);
+      socket.emit('conversation:join', conversationId);
+      socket.emit('messages:seen', { conversationId, userId: currentUserId });
+    };
+
+    // Join room immediately if already connected
+    if (socket.connected) {
+      joinRoom();
+    }
+
+    // Attach connect listener so if connection drops and reconnects, we re-join the room automatically
+    socket.on('connect', joinRoom);
 
     const handleReceiveMessage = (msg: IMessage) => {
+      console.log('[SOCKET] Received message in real-time:', msg);
       setMessages((prev) => {
         if (prev.find((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
@@ -108,15 +121,59 @@ export default function ChatWindow({ conversationId, token, currentUserId, role,
     socket.on('typing:start', handleTypingStart);
     socket.on('typing:stop', handleTypingStop);
 
-    // Mark current messages seen
-    socket.emit('messages:seen', { conversationId, userId: currentUserId });
-
     return () => {
+      console.log('[SOCKET] Cleaning up socket listeners in ChatWindow');
+      socket.off('connect', joinRoom);
       socket.off('message:receive', handleReceiveMessage);
       socket.off('typing:start', handleTypingStart);
       socket.off('typing:stop', handleTypingStop);
     };
+
   }, [conversationId, token, socket, currentUserId]);
+
+  // Hybrid Polling Fallback: If WebSockets are not connected/supported (like on serverless environments like Vercel),
+  // fall back to polling the database for messages every 4 seconds.
+  useEffect(() => {
+    let pollingInterval: NodeJS.Timeout | null = null;
+
+    const pollMessages = async () => {
+      // If socket is connected and working, do NOT poll to conserve server/database resources
+      if (socket && socket.connected) {
+        return;
+      }
+
+      try {
+        const res = await axios.get(`/api/chat/messages/${conversationId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data.success) {
+          const incomingMessages: IMessage[] = res.data.data;
+          
+          setMessages((prev) => {
+            const newMessages = incomingMessages.filter(
+              (inMsg) => !prev.some((pMsg) => pMsg._id === inMsg._id)
+            );
+            
+            if (newMessages.length === 0) return prev;
+            
+            // Merge and sort by creation time
+            return [...prev, ...newMessages].sort(
+              (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
+          });
+        }
+      } catch (err) {
+        console.error('[HYBRID POLLING ERROR]', err);
+      }
+    };
+
+    // Poll every 4 seconds if socket is not connected
+    pollingInterval = setInterval(pollMessages, 4000);
+
+    return () => {
+      if (pollingInterval) clearInterval(pollingInterval);
+    };
+  }, [conversationId, token, socket]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
