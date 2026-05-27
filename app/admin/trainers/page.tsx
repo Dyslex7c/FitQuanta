@@ -1,24 +1,36 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import axios from 'axios';
 import Toast from '@/components/Toast';
 
+interface PendingTrainer {
+  _id: string;
+  name: string;
+  age: number;
+  gender: string;
+  country: string;
+  yearsOfExperience: number;
+  specializations: string[];
+  bio: string;
+  certifications?: string[];
+}
+
 export default function AdminTrainersPage() {
   const router = useRouter();
   const { token, user } = useSelector((s: RootState) => s.auth);
 
-  const [pendingTrainers, setPendingTrainers] = useState<any[]>([]);
+  const [pendingTrainers, setPendingTrainers] = useState<PendingTrainer[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
   // Admin note updates per trainer
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
 
-  const fetchPendingTrainers = async () => {
+  const fetchPendingTrainers = useCallback(async () => {
     try {
       const res = await axios.get('/api/trainer/approve', {
         headers: { Authorization: `Bearer ${token}` }
@@ -31,7 +43,7 @@ export default function AdminTrainersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (!token || !user) {
@@ -43,8 +55,10 @@ export default function AdminTrainersPage() {
       return;
     }
 
-    fetchPendingTrainers();
-  }, [token, user, router]);
+    Promise.resolve().then(() => {
+      fetchPendingTrainers();
+    });
+  }, [token, user, router, fetchPendingTrainers]);
 
   const handleAction = async (trainerId: string, action: 'approve' | 'reject' | 'suspend') => {
     const adminNote = adminNotes[trainerId] || '';
@@ -81,9 +95,7 @@ export default function AdminTrainersPage() {
   };
 
   return (
-    <div className="page-wrapper" style={{ background: '#06060a', minHeight: '100vh' }}>
-      
-
+    <div className="page-wrapper" style={{ background: '#06060a', minHeight: '100vh', paddingBottom: '60px' }}>
       <div className="page-inner">
         {/* Header */}
         <div style={{ marginBottom: '32px' }} className="animate-slide-up">
@@ -109,9 +121,9 @@ export default function AdminTrainersPage() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="flex flex-col gap-6">
             {pendingTrainers.map((tr) => (
-              <div key={tr._id} className="card animate-slide-up" style={{ padding: '24px' }}>
+              <div key={tr._id} className="card p-4 sm:p-6 animate-slide-up">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid #22223a', paddingBottom: '16px', marginBottom: '16px' }}>
                   <div>
                     <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#ffffff', margin: '0 0 6px 0', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
@@ -181,18 +193,18 @@ export default function AdminTrainersPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px', alignSelf: 'flex-end', width: '100%', maxWidth: '360px' }}>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:max-w-[360px] sm:self-end">
                     <button
                       onClick={() => handleAction(tr._id, 'reject')}
-                      className="btn btn-ghost"
-                      style={{ flex: 1, border: '1px solid #22223a', color: '#ff4d4d', fontSize: '12px' }}
+                      className="btn btn-ghost w-full sm:flex-1"
+                      style={{ border: '1px solid #22223a', color: '#ff4d4d', fontSize: '12px' }}
                     >
                       Decline
                     </button>
                     <button
                       onClick={() => handleAction(tr._id, 'approve')}
-                      className="btn btn-primary"
-                      style={{ flex: 1, fontSize: '12px' }}
+                      className="btn btn-primary w-full sm:flex-1"
+                      style={{ fontSize: '12px' }}
                     >
                       Verify & Approve
                     </button>

@@ -1,24 +1,51 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import axios from 'axios';
 import Link from 'next/link';
 
+interface AdminStats {
+  totalSales: number;
+  grossPlatformFee: number;
+  totalTrainers: number;
+  pendingTrainers: number;
+}
+
+interface Purchase {
+  _id: string;
+  planName: string;
+  razorpayOrderId: string;
+  amountINR: number;
+  platformCommissionINR: number;
+  trainerEarningsINR: number;
+  createdAt: string;
+}
+
+interface Trainer {
+  _id: string;
+  name: string;
+  yearsOfExperience: number;
+  averageRating: number;
+  totalReviews: number;
+  availabilityStatus: string;
+  status: string;
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { token, user } = useSelector((s: RootState) => s.auth);
 
-  const [stats, setStats] = useState<any>({
+  const [stats, setStats] = useState<AdminStats>({
     totalSales: 0,
     grossPlatformFee: 0,
     totalTrainers: 0,
     pendingTrainers: 0,
   });
-  const [purchases, setPurchases] = useState<any[]>([]);
-  const [trainers, setTrainers] = useState<any[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'analytics' | 'earnings' | 'coaches' | 'maintenance'>('analytics');
   
@@ -55,7 +82,7 @@ export default function AdminDashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const fetchAdminStats = async () => {
+  const fetchAdminStats = useCallback(async () => {
     try {
       const [historyRes, trainersRes, pendingRes] = await Promise.all([
         axios.get('/api/payments/history', { headers: { Authorization: `Bearer ${token}` } }),
@@ -65,15 +92,15 @@ export default function AdminDashboardPage() {
 
       let totalSales = 0;
       let platformCommission = 0;
-      let historyData: any[] = [];
+      let historyData: Purchase[] = [];
       if (historyRes.data.success) {
         historyData = historyRes.data.data;
-        totalSales = historyData.reduce((acc: number, curr: any) => acc + curr.amountINR, 0);
-        platformCommission = historyData.reduce((acc: number, curr: any) => acc + curr.platformCommissionINR, 0);
+        totalSales = historyData.reduce((acc: number, curr: Purchase) => acc + curr.amountINR, 0);
+        platformCommission = historyData.reduce((acc: number, curr: Purchase) => acc + curr.platformCommissionINR, 0);
         setPurchases(historyData);
       }
 
-      let trainerData: any[] = [];
+      let trainerData: Trainer[] = [];
       let totalTrainers = 0;
       if (trainersRes.data.success) {
         trainerData = trainersRes.data.data.trainers;
@@ -97,7 +124,7 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (!token || !user) {
@@ -109,8 +136,10 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    fetchAdminStats();
-  }, [token, user, router]);
+    Promise.resolve().then(() => {
+      fetchAdminStats();
+    });
+  }, [token, user, router, fetchAdminStats]);
 
   if (loading) {
     return (
@@ -127,7 +156,7 @@ export default function AdminDashboardPage() {
       <div className="page-inner">
         
         {/* Title and Controls Panel */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }} className="animate-slide-up">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', flexWrap: 'wrap', gap: '20px' }} className="animate-slide-up">
           <div>
             <h1 style={{ fontSize: '24px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#ffffff' }}>
               Admin Control Center
@@ -138,7 +167,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Tab buttons */}
-          <div style={{ display: 'flex', background: '#0d0d14', border: '1px solid #22223a', borderRadius: '8px', padding: '3px' }}>
+          <div className="flex flex-wrap sm:flex-nowrap w-full sm:w-auto gap-1" style={{ background: '#0d0d14', border: '1px solid #22223a', borderRadius: '8px', padding: '3px' }}>
             {([
               { id: 'analytics', label: 'Overview' },
               { id: 'earnings', label: 'Earnings cut' },
@@ -148,6 +177,7 @@ export default function AdminDashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
+                className="flex-grow sm:flex-grow-0 text-center"
                 style={{
                   padding: '6px 14px',
                   fontSize: '11.5px',
@@ -167,7 +197,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Global Metric Cards (Miniaturized for reference) */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }} className="animate-slide-up">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-up">
           <div className="card" style={{ padding: '16px', background: '#0d0d14', border: '1px solid #22223a' }}>
             <span style={{ fontSize: '10px', color: '#545870', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '6px' }}>
               Gross Volume (Sales)
@@ -207,15 +237,13 @@ export default function AdminDashboardPage() {
 
         {/* Tab content rendering */}
         {activeTab === 'analytics' && (
-          <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-slide-up flex flex-col gap-6">
             {/* Overview dashboard header banner */}
             <div
-              className="card"
+              className="card p-6 sm:p-9 text-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(240,112,40,0.05) 0%, rgba(6,6,10,0) 100%)',
                 borderColor: 'rgba(240,112,40,0.2)',
-                padding: '36px',
-                textAlign: 'center'
               }}
             >
               <span style={{ fontSize: '32px', display: 'block', marginBottom: '14px' }}>📋</span>
@@ -233,7 +261,7 @@ export default function AdminDashboardPage() {
         )}
 
         {activeTab === 'earnings' && (
-          <div className="card animate-slide-up" style={{ padding: '24px' }}>
+          <div className="card p-4 sm:p-6 animate-slide-up">
             <h3 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '18px', borderBottom: '1px solid #22223a', paddingBottom: '8px', color: '#ffffff' }}>
               Systems Earnings & Transaction Ledger
             </h3>
@@ -244,7 +272,7 @@ export default function AdminDashboardPage() {
               </p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
+                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid #22223a', color: '#545870' }}>
                       <th style={{ padding: '10px 8px', fontWeight: 600 }}>Plan Details</th>
@@ -276,7 +304,7 @@ export default function AdminDashboardPage() {
         )}
 
         {activeTab === 'coaches' && (
-          <div className="card animate-slide-up" style={{ padding: '24px' }}>
+          <div className="card p-4 sm:p-6 animate-slide-up">
             <h3 style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '18px', borderBottom: '1px solid #22223a', paddingBottom: '8px', color: '#ffffff' }}>
               Coaches & Ratings Audit Feed
             </h3>
@@ -287,7 +315,7 @@ export default function AdminDashboardPage() {
               </p>
             ) : (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
+                <table style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse', fontSize: '12.5px', textAlign: 'left' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid #22223a', color: '#545870' }}>
                       <th style={{ padding: '10px 8px', fontWeight: 600 }}>Coach Name</th>
@@ -342,11 +370,11 @@ export default function AdminDashboardPage() {
         )}
 
         {activeTab === 'maintenance' && (
-          <div className="animate-slide-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="animate-slide-up flex flex-col gap-6">
             
             {/* System Diagnostic Status Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-              <div className="card" style={{ padding: '20px', background: '#0d0d14', border: '1px solid #22223a' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="card p-5" style={{ background: '#0d0d14', border: '1px solid #22223a' }}>
                 <span style={{ fontSize: '10px', color: '#545870', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '6px' }}>
                   Database Latency
                 </span>
@@ -384,7 +412,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Simulated Live System Logs console */}
-            <div className="card" style={{ padding: '24px', background: '#08080c', border: '1px solid #22223a', fontFamily: 'monospace' }}>
+            <div className="card p-4 sm:p-6" style={{ background: '#08080c', border: '1px solid #22223a', fontFamily: 'monospace' }}>
               <h4 style={{ fontSize: '11px', fontWeight: 700, color: '#545870', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', fontFamily: 'var(--font-sans), Inter, sans-serif' }}>
                 Live Software Maintenance Diagnostics Log
               </h4>
@@ -425,22 +453,6 @@ export default function AdminDashboardPage() {
         )}
 
       </div>
-
-      <style jsx global>{`
-        @media (max-width: 900px) {
-          div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
-            grid-template-columns: 1fr 1fr !important;
-          }
-          div[style*="gridTemplateColumns: repeat(3, 1fr)"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-        @media (max-width: 500px) {
-          div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
