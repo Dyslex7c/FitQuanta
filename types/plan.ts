@@ -21,6 +21,7 @@ export interface IMeal {
 
 export interface IDietDay {
   day: string;
+  totalCalories?: number;
   meals: IMeal[];
 }
 

@@ -175,7 +175,7 @@ Return ONLY a single valid JSON object. No markdown. No code blocks. No explanat
 
 "dietPlan": an array of exactly 7 objects, each with:
   - "day": string (e.g. "Day 1 - Monday")
-  - "totalCalories": number (this MUST be exactly ${targetCalories} kcal, allow +/- 50 kcal)
+  - "totalCalories": number (this MUST be exactly the sum of the calories of all individual meals generated for this day. The sum MUST be within +/- 50 kcal of ${targetCalories} kcal)
   - "meals": an array of exactly 3 to 4 meals (e.g., Breakfast, Lunch, Dinner, Snack). Keep foods lists brief. Each meal object has "name" (string), "foods" (array of strings), "protein" (number in grams), "carbs" (number in grams), "fats" (number in grams), "calories" (number)
 
 Make the diet plan use foods commonly available in ${s(user.country ?? 'India')} and appropriate for ${s(user.dietPreference ?? 'veg')} diet. Keep all texts and instructions extremely concise to prevent truncation. Respect the budget level: ${s(user.budget ?? 'medium')}.
@@ -264,6 +264,19 @@ Make the diet plan use foods commonly available in ${s(user.country ?? 'India')}
       // Validate structure
       if (!parsedPlan.workoutPlan || !parsedPlan.dietPlan) {
         throw new Error('Missing workoutPlan or dietPlan keys in response');
+      }
+
+      // Enforce mathematical consistency for dietPlan calories
+      if (Array.isArray(parsedPlan.dietPlan)) {
+        for (const dayPlan of parsedPlan.dietPlan) {
+          if (dayPlan && Array.isArray(dayPlan.meals)) {
+            const sumOfMealsCalories = dayPlan.meals.reduce(
+              (sum: number, meal: any) => sum + (Number(meal.calories) || 0),
+              0
+            );
+            dayPlan.totalCalories = sumOfMealsCalories;
+          }
+        }
       }
     } catch (parseError: any) {
       console.error('[JSON PARSE ERROR]', parseError, 'Raw content was:', rawContent);
